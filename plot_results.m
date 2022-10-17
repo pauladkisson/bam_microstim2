@@ -1,12 +1,12 @@
 %clear;
-sim_name = "FeedforwardGamma";
+sim_name = "Test";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure;
 default_colors = get(gca, "colororder");
 
 start_trial = 1;
-end_trial = 28;
+end_trial = 1;
 num_trials = end_trial - start_trial + 1;
 brains = 1;
 num_brains = length(brains);
@@ -24,9 +24,9 @@ pulse_coherences = [-100, -90, -78.8, -51.2, -25.6, 0] / 100;
 galvanic_coherences = [-100, -90, -78.8, -51.2, -25.6, 0] / 100; %omit 75.6% bc I forgot to change f-->0.15
 %}
 
-control_coherences = [-100, -51.2, -25.6, -12.8, 0, 12.8, 25.6, 51.2]./100;
-pulse_coherences = [-100, -65, -55, -51.2, -45, -26.6, 0, 25.6]./100;
-galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6]./100;
+%control_coherences = [-100, -51.2, -25.6, -12.8, 0, 12.8, 25.6, 51.2]./100;
+%pulse_coherences = [-100, -65, -55, -51.2, -45, -26.6, 0, 25.6]./100;
+%galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6]./100;
 
 %control_coherences = [-100, -51.2, -25.6, 0, 25.6]./100;
 %pulse_coherences = [-100, -65, -55, -45, -25.6, 0, 25.6]./100;
@@ -35,23 +35,23 @@ galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6]./100;
 %control_coherences = [-100, -51.2, -25.6, 0, 25.6]/100;
 %galvanic_coherences = [-100, -51.2, -25.6, 0, 25.6]/100;
 %pulse_coherences = [-100, -51.2, -25.6, 0, 25.6]/100;
-%control_coherences = 0;
-%galvanic_coherences = 0;
-%pulse_coherences = 0;
+control_coherences = 0;
+galvanic_coherences = 0;
+pulse_coherences = 0;
 
 pulse_amps = [-10*1e-6];
-dc_amps = [-1400, 0]*1e-9;
+dc_amps = [-1, 0]*1e-6;
 stim_amps = [pulse_amps, dc_amps];
 %}
 
 %{
-ex_c = -25.6/100;
-%ex_c = -1;
+%ex_c = -25.6/100;
+ex_c = 0;
 ex_trial = 1;
-ex_brain = 1;
 ex_stim_j = 2;
 plot_name = "subplot"; % 'single_stim' or 'subplot' or 'p1_only'
-plot_frs(sim_name, pulse_amps, stim_amps, p, t, t_task, t_taskoff, default_colors, ex_stim_j, ex_brain, ex_c, ex_trial, plot_name)
+plot_frs(sim_name, pulse_amps, stim_amps, p, t, t_task, t_taskoff, default_colors, ...
+                  ex_stim_j, ex_c, ex_trial, plot_name);
 %}
 
 %{
@@ -105,15 +105,15 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, ...
                         start_trial, end_trial, num_trials, default_colors)
 %}
 
-%{
+
 win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
 win_stop = t_task + 0.1;
 ex_c = 0;
 %  plot_name = 'ex_c' or 'p1_wins' or 'p1_loses'
 plot_name = "ex_c";
 num_brains = length(brains);
-plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, win_start, ...
-                     win_stop, default_colors, brains, num_brains, ...
+plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, ...
+                     win_start, win_stop, default_colors, num_brains, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...
                      start_trial, end_trial, num_trials, plot_name);
 %}
@@ -132,7 +132,7 @@ plot_oscillation(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, ...
                         f0, start_trial, end_trial, num_trials, plot_name);
 %}
 
-
+%{
 plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, brains, ...
                num_brains, num_batch, ...
                pulse_coherences, galvanic_coherences, control_coherences)

@@ -16,7 +16,7 @@ for j = 1:length(stim_amps)
     if pulse
         fprintf("Pulse Stimulation Amplitude: %0.2fuA \n", stim_amp*1e6)
         input_stimpath = strcat(sim_path, sprintf("/ustim/%0.2fuA_pulse.mat", stim_amp*1e6));
-        output_stimpath = strcat(sim_path, sprintf("/data/%0.2fnA_pulse", stim_amp*1e6));
+        output_stimpath = strcat(sim_path, sprintf("/data/%0.2fuA_pulse", stim_amp*1e6));
         stim_coherences = pulse_coherences;
     elseif stim_amp ~= 0
         fprintf("Galvanic Stimulation Amplitude: %0.2fuA \n", stim_amp*1e6)

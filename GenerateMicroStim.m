@@ -35,15 +35,14 @@ function GenerateMicroStim(t, t_task, t_taskoff, stim_duration, stim_freq, ...
         true_amps = I_ustim(t==t_task, 1:num_affected);
         Vmir = true_amps ./ gL;
 
+        basepath = strcat(sim_path, "/ustim");
+        mkdir(basepath)
+        save(strcat(basepath, "/r.mat"), 'ball_r')
         if is_pulse
             I_ustim = I_ustim * thresh_cor;
             Vmir = Vmir * thresh_cor;
-            basepath = strcat(sim_path, "/ustim");
-            mkdir(basepath)
             save(strcat(basepath, sprintf("/%0.2fuA_pulse.mat", stim_amp*1e6)), "I_ustim", 'Vmir')
         else
-            basepath = strcat(sim_path, "/ustim");
-            mkdir(basepath)
             save(strcat(basepath, sprintf("/%0.2fuA_galvanic.mat", stim_amp*1e6)), "I_ustim", 'Vmir')
         end
         if plot

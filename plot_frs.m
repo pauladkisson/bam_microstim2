@@ -2,19 +2,19 @@
 %%% 2/14/2022
 %%% Plot example Population Firing Rates
 function plot_frs(sim_name, pulse_amps, stim_amps, p, t, t_task, t_taskoff, default_colors, ...
-                  ex_stim_j, ex_brain, ex_c, ex_trial, plot_name)
+                  ex_stim_j, ex_c, ex_trial, plot_name)
     if plot_name == "single_stim"
         pulse = ex_stim_j<=length(pulse_amps);
         stim_amp = stim_amps(ex_stim_j);
         if pulse
-            output_stimpath = sprintf("Simulation %s/brain%0.0f/data/%0.1fnA_pulse", ...
-                [sim_name, ex_brain, stim_amp*1e9]);
+            output_stimpath = sprintf("Simulation %s/data/%0.2fuA_pulse", ...
+                [sim_name, stim_amp*1e6]);
         elseif stim_amp == 0
-            output_stimpath = sprintf("Simulation %s/brain1/data/%0.1fnA_galvanic", ...
-                [sim_name, stim_amp*1e9]);
+            output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
+                [sim_name, stim_amp*1e6]);
         else
-            output_stimpath = sprintf("Simulation %s/brain%0.0f/data/%0.1fnA_galvanic", ...
-                [sim_name, ex_brain, stim_amp*1e9]);
+            output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
+                [sim_name, stim_amp*1e6]);
         end
         load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, ex_trial])), "pop_frs")
         figure;
@@ -40,14 +40,14 @@ function plot_frs(sim_name, pulse_amps, stim_amps, p, t, t_task, t_taskoff, defa
             stim_amp = stim_amps(j);
             pulse = j<=length(pulse_amps);
             if pulse
-                output_stimpath = sprintf("Simulation %s/brain%0.0f/data/%0.1fnA_pulse", ...
-                    [sim_name, ex_brain, stim_amp*1e9]);
+                output_stimpath = sprintf("Simulation %s/data/%0.2fuA_pulse", ...
+                    [sim_name, stim_amp*1e6]);
             elseif stim_amp == 0
-                output_stimpath = sprintf("Simulation %s/brain1/data/%0.1fnA_galvanic", ...
-                    [sim_name, stim_amp*1e9]);
+                output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
+                    [sim_name, stim_amp*1e6]);
             else
-                output_stimpath = sprintf("Simulation %s/brain%0.0f/data/%0.1fnA_galvanic", ...
-                    [sim_name, ex_brain, stim_amp*1e9]);
+                output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
+                    [sim_name, stim_amp*1e6]);
             end
             try
                 load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, ex_trial])), "pop_frs")

@@ -1,8 +1,5 @@
 %%% Paul Adkisson 
-%%% 9.2.21
-%%% Purpose Define Constants for Wang 2002 Biophysical Attractor
-%%% Model (BAM)
-%%% Adds pulse-pulse, pulse-spontaneous, spontaneous-pulse blocking
+%%% Define Constants for Biophysical Attractor Model (BAM)
 clear;
 tic;
 
@@ -35,10 +32,7 @@ num_group = floor(f*N_E);
 w_plus = 0;
 w_minus = 0;
 w = 0;
-start_brain = 1;
-end_brain = 1;
-brains = start_brain:end_brain;
-GenerateBAM(brains, N_E, N_I, f, p, w_plus, w_minus, w, sim_path);
+GenerateBAM(N_E, N_I, f, p, w_plus, w_minus, w, sim_path);
 GenerateConductances(N_E, N_I, sim_path)
 pop_type = ones(N, 1);
 pop_type(N_E+1:end) = 2; % population_type = 1 for pyr, 2 for int
@@ -47,15 +41,9 @@ pop_type(N_E+1:end) = 2; % population_type = 1 for pyr, 2 for int
 fr_bg = 2400;
 % Synaptic Conductance = [pyramidal, interneuron]
 G_ampa_ext = [2.1, 1.62]*1e-9; %nS
-%pulse_coherences = [-100, -78.8, -75.6, -72.4, -69.2, -66, -51.2, -25.6, 0, 25.6] / 100;
-%control_coherences = [-100, -51.2, -25.6, -12.8, -6.4, -3.2, 0, 3.2, 6.4, 12.8, 25.6] / 100;
-%galvanic_coherences = [-100, -51.2 -42.6, -39.4, -36.2, -33, -29.8, -25.6, 0, 25.6] / 100;
 pulse_coherences = [0] / 100;
 control_coherences = [0] / 100;
 galvanic_coherences = [0] / 100;
-%pulse_coherences = [-100] / 100;
-%control_coherences = [-100] / 100;
-%galvanic_coherences = [-100] / 100;
 coherences = union(union(pulse_coherences, galvanic_coherences), control_coherences, 'sorted');
 max_fr_task = 80;
 t_task = 1;
@@ -90,8 +78,15 @@ pulse_amps = [-10]*1e-6;
 dc_amps = [-1, 0]*1e-6;
 %dc_amps = [];
 stim_amps = [pulse_amps, dc_amps];
+perc_affected = 0.5; %Percent of neurons affected by microstimulation
+num_affected = floor(perc_affected*num_group);
+min_r = 10e-6; %Minimum distance of 10um
+max_r = 2e-3; %Maximum distance of 2mm (Levitt et al.)
+thresh_cor = 0.211; %Threshold correction factor for pulses
+plot_microstim = false;
 GenerateMicroStim(t, t_task, t_taskoff, stim_duration, stim_freq, ...
-                  pulse_amps, dc_amps, N, num_group, brains, sim_path);
+                  min_r, max_r, num_affected, thresh_cor, gL(1), ...
+                  pulse_amps, dc_amps, N, sim_path, plot_microstim)
 
 %% Firing Rate Parameters
 win_size = 5e-3;
@@ -206,20 +201,5 @@ I_b = [t_b(:, 1)*1e-6*-elec_r_thia; 1]; %ensure interpolation always works
 save_path = strcat(sim_path, "/bam_constants.mat");
 save(save_path)
 toc
-
-function electric_r = mirror_est(z)
-    rho_e = 3; %extracellular resistivity (Ohm-m)
-    N = 25; %Number of nodes
-    n = (-(N-1)/2:(N-1)/2)'; %node numbers
-    D = 10*10^(-6); %Fiber Diameter (m)
-    delta_x = 100*D; %Internode Distance (m)
-    x = delta_x*n; %node positions
-    r = sqrt(x.^2 + z.^2); %distance from electrode to node (cm)
-    gL = 25*1e-9;
-    V_e = rho_e ./ (4*pi*z);
-    V_es = rho_e ./ (4*pi*r);
-    V_e_bar = mean(V_es, 1);
-    electric_r = (V_e_bar - V_e)*gL; %electric_r = Vm_ss/I_el
-end
 
 

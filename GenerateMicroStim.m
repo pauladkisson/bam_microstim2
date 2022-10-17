@@ -2,8 +2,8 @@
 %%% 11.5.21
 %%% Purpose Generate micro-stimulation current
 function GenerateMicroStim(t, t_task, t_taskoff, stim_duration, stim_freq, ...
-                          pulse_amps, dc_amps, N, num_group, brains, sim_path)
-    thresh_cor = 0.211; %Threshold correction factor for pulses
+                          min_r, max_r, num_affected, thresh_cor, gL, ...
+                          pulse_amps, dc_amps, N, sim_path, plot)
     I_ustim_base = zeros(length(t), N);
     dt = t(2) - t(1);
     stim_amps = [pulse_amps, dc_amps];
@@ -27,52 +27,50 @@ function GenerateMicroStim(t, t_task, t_taskoff, stim_duration, stim_freq, ...
             I_ustim_base = ones(length(t), N)*stim_amp;
         end
         I_ustim_base(t<t_task|t>t_taskoff, :) = 0;
-        for brain = brains
-            brainpath = strcat(sim_path, sprintf("/brain%0.0f", brain));
-            load(strcat(brainpath, "/r.mat"), "electric_r", "ball_r")
-            I_ustim = [I_ustim_base(:, 1:num_group).*electric_r, zeros(length(t), N-num_group)];
-            I_ustim(:, 2:2:end) = 0; %Every other neuron is unaffected
-            gL = 25*1e-9;
-            true_amps = I_ustim(t==t_task, 1:num_group);
-            Vmir = true_amps ./ gL;
-            
+        
+        regular_r = (max_r - min_r) / (num_affected-1);
+        ball_r = min_r:regular_r:max_r;
+        electric_r = mirror_est(ball_r);
+        I_ustim = [I_ustim_base(:, 1:num_affected).*electric_r, zeros(length(t), N-num_affected)];
+        true_amps = I_ustim(t==t_task, 1:num_affected);
+        Vmir = true_amps ./ gL;
+
+        if is_pulse
+            I_ustim = I_ustim * thresh_cor;
+            Vmir = Vmir * thresh_cor;
+            basepath = strcat(sim_path, "/ustim");
+            mkdir(basepath)
+            save(strcat(basepath, sprintf("/%0.2fuA_pulse.mat", stim_amp*1e6)), "I_ustim", 'Vmir')
+        else
+            basepath = strcat(sim_path, "/ustim");
+            mkdir(basepath)
+            save(strcat(basepath, sprintf("/%0.2fuA_galvanic.mat", stim_amp*1e6)), "I_ustim", 'Vmir')
+        end
+        if plot
+            figure;
+            hold on
+            scatter(ball_r*1e6, Vmir*1e3)
+            xlabel("Distance from Electrode (um)")
+            ylabel("Stimulation Depolarization (mV)")
             if is_pulse
-                I_ustim = I_ustim * thresh_cor;
-                Vmir = Vmir * thresh_cor;
-                basepath = strcat(brainpath, "/ustim");
-                mkdir(basepath)
-                save(strcat(basepath, sprintf("/%0.1fnA_pulse.mat", stim_amp*1e9)), "I_ustim", 'Vmir')
+                title("Pulse")
+            elseif stim_amp == 0
+                title("Control")
             else
-                basepath = strcat(brainpath, "/ustim");
-                mkdir(basepath)
-                save(strcat(basepath, sprintf("/%0.1fnA_galvanic.mat", stim_amp*1e9)), "I_ustim", 'Vmir')
+                title("Galvanic")
+            end
+
+            figure;
+            scatter(ball_r*1e6, Vmir*gL*1e9)
+            xlabel("Distance from Electrode (um)")
+            ylabel("Internal Stimulation Amplitude (nA)")
+            if is_pulse
+                title("Pulse")
+            elseif stim_amp == 0
+                title("Control")
+            else
+                title("Galvanic")
             end
         end
-        %{
-        figure;
-        hold on
-        scatter(ball_r*1e6, Vmir*1e3)
-        xlabel("Distance from Electrode (um)")
-        ylabel("Stimulation Depolarization (mV)")
-        if is_pulse
-            title("Pulse")
-        elseif stim_amp == 0
-            title("Control")
-        else
-            title("Galvanic")
-        end
-        
-        figure;
-        scatter(ball_r*1e6, Vmir*gL*1e9)
-        xlabel("Distance from Electrode (um)")
-        ylabel("Internal Stimulation Amplitude (nA)")
-        if is_pulse
-            title("Pulse")
-        elseif stim_amp == 0
-            title("Control")
-        else
-            title("Galvanic")
-        end
-        %}
     end
 end

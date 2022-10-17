@@ -48,8 +48,10 @@ coherences = union(union(pulse_coherences, galvanic_coherences), control_coheren
 max_fr_task = 80;
 t_task = 1;
 t_taskoff = 3;
-GenerateSpikes(fr_bg, max_fr_task, coherences, f, N_E, N_I, t_task, ...
-    t_taskoff, t, start_trial, end_trial, sim_path);
+m = 0.5; %modulation strength
+f0 = 40; %modulation frequency
+GenerateSpikes(fr_bg, m, f0, max_fr_task, coherences, f, N_E, N_I, t_task, ...
+    t_taskoff, t, start_trial, end_trial, sim_path)
 
 %% LIF Parameters
 % Parameter = [pyramidal, interneuron]

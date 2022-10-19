@@ -22,7 +22,7 @@ function GenerateSpikes(fr_bg, m, f0, max_fr_task, coherences, f, N_E, N_I, t_ta
         for trial = start_trial:end_trial
             rng(trial);
             spikes = rand(length(t), N) < (dt*fr);
-            spikepath = strcat(sim_path, sprintf("/trial%0.0f.mat", trial));
+            spikepath = strcat(coherentpath, sprintf("/trial%0.0f.mat", trial));
             save(spikepath, 'spikes', '-v7.3');
         end
     end

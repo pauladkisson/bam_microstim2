@@ -2,84 +2,80 @@
 %%% 2/14/2022
 %%% Plot Phase Locking
 function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, stim_freq, num_group, ...
-                        idx_diff, default_colors, brains, num_brains, ...
-                        pulse_coherences, galvanic_coherences, control_coherences, ...
-                        start_trial, end_trial, num_trials)
-    ball_rs = zeros(num_brains, num_group);
+                        idx_diff, default_colors, start_trial, end_trial, num_trials, ...
+                        pulse_coherences, galvanic_coherences, control_coherences)
+    ball_rs = zeros(num_group, 1);
     pulsetimes = t_task:1/stim_freq:t_taskoff;
     figure(1);
     hold on
     for sim_name = sim_names
-        stim_sync = zeros(length(stim_amps), num_brains, num_group);
-        for brain = brains
-            fprintf("brain %0.0f \n", brain)
-            load(sprintf("Simulation %s/brain%0.0f/r.mat", [sim_name, brain]), "ball_r")
-            ball_rs(brain, :) = ball_r;
-            for j = 1:length(stim_amps)
-                stim_amp = stim_amps(j);
-                pulse = j<=length(pulse_amps);
-                if pulse
-                    output_stimpath = sprintf("Simulation %s/brain%0.0f/data/%0.1fnA_pulse", ...
-                        [sim_name, brain, stim_amp*1e9]);
-                    stim_coherences = pulse_coherences;
+        stim_sync = zeros(length(stim_amps), num_trials, num_group);
+        load(sprintf("Simulation %s/ustim/r.mat", sim_name), "ball_r")
+        ball_rs(1:num_affected) = ball_r;
+        for j = 1:length(stim_amps)
+            stim_amp = stim_amps(j);
+            pulse = j<=length(pulse_amps);
+            if pulse
+                output_stimpath = sprintf("Simulation %s/brain%0.0f/data/%0.1fnA_pulse", ...
+                    [sim_name, brain, stim_amp*1e9]);
+                stim_coherences = pulse_coherences;
+            else
+                output_stimpath = sprintf("Simulation %s/brain%0.0f/data/%0.1fnA_galvanic", ...
+                    [sim_name, brain, stim_amp*1e9]);
+                if stim_amp == 0
+                    stim_coherences = control_coherences;
+                    ctrl_ball_r = ball_r;
+                    if brain ~= 1
+                        continue
+                    end
                 else
-                    output_stimpath = sprintf("Simulation %s/brain%0.0f/data/%0.1fnA_galvanic", ...
-                        [sim_name, brain, stim_amp*1e9]);
-                    if stim_amp == 0
-                        stim_coherences = control_coherences;
-                        ctrl_ball_r = ball_r;
-                        if brain ~= 1
+                    stim_coherences = galvanic_coherences;
+                end
+            end
+            load(strcat(output_stimpath, "/decisions.mat"), "final_decisions")
+            if ~contains(sim_name, "Discon")
+                num_wins = sum(final_decisions(:, stim_coherences==0)==1, 'all') * ones(num_group, 1);
+            else
+                num_wins = num_trials * ones(num_group, 1);
+            end
+            for c = 0
+                fprintf("coherence: %0.3f%% \n", c*100)
+                nan_neurons = zeros(num_trials, num_group);
+                for trial = start_trial:end_trial
+                    relative_trial = trial - start_trial + 1;
+                    if ~contains(sim_name, "Discon") && final_decisions(relative_trial, stim_coherences==c) ~= 1
+                        continue %skip trials where P1 doesn't win
+                    end
+                    load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
+                        "recspikes")
+                    perc_sync = zeros(num_group, 1);
+                    for nn = 1:num_group
+                        spikeidx = recspikes(int2str(nn));
+                        spikeidx = spikeidx(t(spikeidx)>=2.5 & t(spikeidx)<t_taskoff);
+                        if isempty(spikeidx)
+                            perc_sync(nn) = NaN;
                             continue
                         end
-                    else
-                        stim_coherences = galvanic_coherences;
-                    end
-                end
-                load(strcat(output_stimpath, "/decisions.mat"), "final_decisions")
-                if ~contains(sim_name, "Discon")
-                    num_wins = sum(final_decisions(:, stim_coherences==0)==1, 'all') * ones(num_group, 1);
-                else
-                    num_wins = num_trials * ones(num_group, 1);
-                end
-                for c = 0
-                    fprintf("coherence: %0.3f%% \n", c*100)
-                    nan_neurons = zeros(num_trials, num_group);
-                    for trial = start_trial:end_trial
-                        relative_trial = trial - start_trial + 1;
-                        if ~contains(sim_name, "Discon") && final_decisions(relative_trial, stim_coherences==c) ~= 1
-                            continue %skip trials where P1 doesn't win
-                        end
-                        load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
-                            "recspikes")
-                        perc_sync = zeros(num_group, 1);
-                        for nn = 1:num_group
-                            spikeidx = recspikes(int2str(nn));
-                            spikeidx = spikeidx(t(spikeidx)>=2.5 & t(spikeidx)<t_taskoff);
-                            if isempty(spikeidx)
-                                perc_sync(nn) = NaN;
-                                continue
-                            end
-                            for n_spk = 1:length(spikeidx)
-                                tmp_ts = pulsetimes(t(spikeidx(n_spk))- pulsetimes>=0);
-                                [t_diff, ~] = min(abs(t(spikeidx(n_spk)) - tmp_ts));
-                                if t_diff <= t(idx_diff)
-                                    perc_sync(nn) = perc_sync(nn) + 1 / length(spikeidx);
-                                end
+                        for n_spk = 1:length(spikeidx)
+                            tmp_ts = pulsetimes(t(spikeidx(n_spk))- pulsetimes>=0);
+                            [t_diff, ~] = min(abs(t(spikeidx(n_spk)) - tmp_ts));
+                            if t_diff <= t(idx_diff)
+                                perc_sync(nn) = perc_sync(nn) + 1 / length(spikeidx);
                             end
                         end
-                        no_spike_neurons = isnan(perc_sync);
-                        num_wins(no_spike_neurons) = num_wins(no_spike_neurons) - 1;
-                        perc_sync(no_spike_neurons) = [];
-                        stim_sync(j, brain, ~no_spike_neurons) = ...
-                            reshape(stim_sync(j, brain, ~no_spike_neurons), size(perc_sync)) + perc_sync;
-                        nan_neurons(trial, :) = no_spike_neurons;
                     end
-                    if any(all(nan_neurons==1, 1)) %no spikes for all 36 trials
-                        stim_sync(j, brain, all(nan_neurons==1, 1)) = NaN;
-                    end
+                    no_spike_neurons = isnan(perc_sync);
+                    num_wins(no_spike_neurons) = num_wins(no_spike_neurons) - 1;
+                    perc_sync(no_spike_neurons) = [];
+                    stim_sync(j, brain, ~no_spike_neurons) = ...
+                        reshape(stim_sync(j, brain, ~no_spike_neurons), size(perc_sync)) + perc_sync;
+                    nan_neurons(trial, :) = no_spike_neurons;
                 end
-                stim_sync(j, brain, :) = reshape(stim_sync(j, brain, :), size(num_wins)) ./ num_wins;
+                if any(all(nan_neurons==1, 1)) %no spikes for all 36 trials
+                    stim_sync(j, brain, all(nan_neurons==1, 1)) = NaN;
+                end
             end
+            stim_sync(j, brain, :) = reshape(stim_sync(j, brain, :), size(num_wins)) ./ num_wins;
         end
         nan_sync = isnan(stim_sync); 
         stim_sync = stim_sync * 100;

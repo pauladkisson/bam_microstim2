@@ -56,14 +56,14 @@ plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_group, ...
 
 
 %% Plot Phaselocking to Pulses
-sim_names = ["FeedForwardGamma", "FeedforwardGamma"];
+sim_names = ["Brainless_m=0_Con", "Brainless_m=0_Discon"]; % [Connected, Disconnected]
 idx_diff = stim_ind+1;% how far off timing is from pulse timing + 1 to account for t(1) = 0
 plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, stim_freq, num_group, ...
                         idx_diff, default_colors, brains, num_brains, ...
                         pulse_coherences, galvanic_coherences, control_coherences, ...
-                        start_trial, end_trial, num_trials)
-%}
+                        start_trial, end_trial, num_trials);
 
+%%
 %{
 N_start = 1;
 N_end = floor(num_group);

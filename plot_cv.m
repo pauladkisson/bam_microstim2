@@ -76,8 +76,7 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_gr
         for sim_name = sim_names
             stim_cv = zeros(length(stim_amps), num_trials, num_group);
             load(sprintf("Simulation %s/ustim/r.mat", sim_name), 'ball_r')
-            ball_rs(1:num_affected) = ball_r;
-            ball_rs(num_affected+1:end) = 2500*1e-6 + 250e-6*(rand(num_group-num_affected, 1)-0.5);
+            ball_rs = get_ball_rs(ball_r, num_affected, num_group);
             for j = 1:length(stim_amps)
                 stim_amp = stim_amps(j);
                 pulse = j<=length(pulse_amps);

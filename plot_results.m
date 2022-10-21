@@ -1,6 +1,6 @@
 %% Simulation Parameters
 clear;
-sim_name = "Brainless_m=0_Discon";
+sim_name = "Brainless_m=0_Con";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
@@ -16,18 +16,16 @@ galvanic_coherences = 0;
 pulse_coherences = 0;
 
 pulse_amps = [-10*1e-6];
-dc_amps = [-1, 0]*1e-6;
+dc_amps = [-1.4, 0]*1e-6;
 stim_amps = [pulse_amps, dc_amps];
-%}
 
 %% Plot Firing Rates
-%ex_c = -25.6/100;
 ex_c = 0;
 ex_trial = 1;
-ex_stim_j = 3;
-plot_name = "single_stim"; % 'single_stim' or 'subplot' or 'p1_only'
-plot_frs(sim_name, pulse_amps, stim_amps, p, t, t_task, t_taskoff, default_colors, ...
-                  ex_stim_j, ex_c, ex_trial, plot_name);
+ex_stim_j = 2;
+plot_name = "p1_only"; % 'single_stim' or 'subplot' or 'p1_only'
+plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
+                  t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, plot_name);
 
 
 %%

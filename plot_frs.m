@@ -1,8 +1,9 @@
 %%% Paul Adkisson
 %%% 2/14/2022
 %%% Plot example Population Firing Rates
-function plot_frs(sim_name, pulse_amps, stim_amps, p, t, t_task, t_taskoff, default_colors, ...
-                  ex_stim_j, ex_c, ex_trial, plot_name)
+function plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
+                  t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, plot_name)
+    dt = t(2) - t(1);
     if plot_name == "single_stim"
         pulse = ex_stim_j<=length(pulse_amps);
         stim_amp = stim_amps(ex_stim_j);
@@ -16,18 +17,19 @@ function plot_frs(sim_name, pulse_amps, stim_amps, p, t, t_task, t_taskoff, defa
             output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                 [sim_name, stim_amp*1e6]);
         end
-        load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, ex_trial])), "pop_frs")
+        load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, ex_trial])), "recspikes")
+        [pop_frs, ~] = recspikes2popfrs(recspikes, t, N, dt, p, f, N_E);
         figure;
         set(gca, 'fontsize', 18)
         hold on
         for i = 1:p+2
-            plot(t, pop_frs(:, i))
+            plot(t, pop_frs(:, i), 'Linewidth', 4)
         end
         xline(t_task, 'k--')
         xline(t_taskoff, 'k--')
         hold off
         xlabel("Time (s)")
-        ylabel("Population Firing Rate (Hz)")
+        ylabel("Population Firing Rate (spk/s)")
         legend(["P1", "P2", "NS", "Int"], ...
             "Location", "northwest")
 
@@ -49,17 +51,13 @@ function plot_frs(sim_name, pulse_amps, stim_amps, p, t, t_task, t_taskoff, defa
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                     [sim_name, stim_amp*1e6]);
             end
-            try
-                load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, ex_trial])), "pop_frs")
-            catch
-                continue
-            end
+            load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, ex_trial])), "recspikes")
+            [pop_frs, ~] = recspikes2popfrs(recspikes, t, N, dt, p, f, N_E);
             mean_fr = mean(pop_frs(t>=2.5&t<3, 1));
             axs(j) = subplot(length(stim_amps), 1, j);
+            set(axs(j), 'fontsize', 18);
             hold on
-            plot(t, pop_frs)
-            %plot(t, pop_frs(:, 1))
-            %xlim([t_taskoff-0.2, t_taskoff+0.2]) 
+            plot(t, pop_frs, 'Linewidth', 4)
             hold off
             if pulse
                 title("Pulsatile Stimulation")
@@ -74,7 +72,7 @@ function plot_frs(sim_name, pulse_amps, stim_amps, p, t, t_task, t_taskoff, defa
             if j == length(stim_amps)
                 xlabel("Time (s)")
             elseif j == ceil(length(stim_amps)/2)
-                ylabel("Population Firing Rate (Hz)")
+                ylabel("Population Firing Rate (spk/s)")
             end
         end
         linkaxes(axs)
@@ -87,27 +85,26 @@ function plot_frs(sim_name, pulse_amps, stim_amps, p, t, t_task, t_taskoff, defa
             stim_amp = stim_amps(j);
             pulse = j<=length(pulse_amps);
             if pulse
-                output_stimpath = sprintf("Simulation %s/brain%0.0f/data/%0.1fnA_pulse", ...
-                    [sim_name, ex_brain, stim_amp*1e9]);
+                output_stimpath = sprintf("Simulation %s/data/%0.2fuA_pulse", ...
+                    [sim_name, stim_amp*1e6]);
             elseif stim_amp == 0
-                output_stimpath = sprintf("Simulation %s/brain1/data/%0.1fnA_galvanic", ...
-                    [sim_name, stim_amp*1e9]);
+                output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
+                    [sim_name, stim_amp*1e6]);
             else
-                output_stimpath = sprintf("Simulation %s/brain%0.0f/data/%0.1fnA_galvanic", ...
-                    [sim_name, ex_brain, stim_amp*1e9]);
+                output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
+                    [sim_name, stim_amp*1e6]);
             end
-            try
-                load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, ex_trial])), "pop_frs")
-            catch
-                continue
-            end
+            load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, ex_trial])), "recspikes")
+            [pop_frs, ~] = recspikes2popfrs(recspikes, t, N, dt, p, f, N_E);
             if pulse
-                plot(t, pop_frs(:, 1), 'Color', default_colors(7, :))
+                plot(t, pop_frs(:, 1), 'Color', default_colors(7, :), 'Linewidth', 2)
             elseif stim_amp == 0
-                plot(t, pop_frs(:, 1), "k")
+                plot(t, pop_frs(:, 1), "k", 'Linewidth', 2)
             else
-                plot(t, pop_frs(:, 1), 'Color', default_colors(5, :))
+                plot(t, pop_frs(:, 1), 'Color', default_colors(5, :), 'Linewidth', 2)
             end
         end
+        xlabel("Time (s)")
+        ylabel("P1 Firing Rate (spk/s)")
     end
 end

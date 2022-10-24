@@ -66,22 +66,21 @@ plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, stim_freq
                         default_colors, start_trial, end_trial, num_trials, ...
                         pulse_coherences, galvanic_coherences, control_coherences);
 
-%%
-%{
+%% Plot Synchrony
 N_start = 1;
 N_end = floor(num_group);
 win_start = 2.5;
 win_stop = 3;
 c_win = 300*1e-6;
 c = 0;
-sim_names = ["thresh_cor=0.211 Con", "thresh_cor=0.211 Discon"];
-plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, ...
-                        brains, num_brains, N_start, N_end, ...
-                        win_start, win_stop, c_win, c, ...
+sim_names = ["Brainless_m=0_Con", "Brainless_m=0_Discon"]; % [Connected, Disconnected]
+symmetric = true;
+plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
+                        N_end, win_start, win_stop, c_win, c, ...
                         pulse_coherences, galvanic_coherences, control_coherences, ...
-                        start_trial, end_trial, num_trials, default_colors)
-%}
+                        start_trial, end_trial, num_trials, symmetric);
 
+%% 
 %{
 win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
 win_stop = t_task + 0.1;

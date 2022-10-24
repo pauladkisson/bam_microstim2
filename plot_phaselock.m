@@ -65,7 +65,7 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         pulse_trialmean = mean(pulse_sync, 1, 'omitnan');
         galvanic_trialmean = mean(galvanic_sync, 1, 'omitnan');
         control_trialmean = mean(control_sync, 1, 'omitnan');
-        if contains(sim_name, "Discon")
+        if contains(sim_name, "Discon") %use shape = '^' instead on next refactor
             figure(1);
             hold on
             scatter(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), ...

@@ -91,24 +91,7 @@ plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, .
                      pulse_coherences, galvanic_coherences, control_coherences, ...
                      start_trial, end_trial, num_trials, plot_name);
 
-%%
-
-%{
-win_start = 2.5;
-win_stop = 3;
-ex_c = 0;
-f0 = 40;
-%  plot_name = 'ex_c' or 'p1_wins' or 'p1_loses'
-plot_name = "p1_wins";
-num_brains = length(brains);
-plot_oscillation(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, ...
-                        win_start, win_stop, default_colors, brains, num_brains, ...
-                        pulse_coherences, galvanic_coherences, control_coherences, ...
-                        f0, start_trial, end_trial, num_trials, plot_name);
-%}
-
-%{
+%% Plot Decisions and Decision Times
 plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, brains, ...
                num_brains, num_batch, ...
                pulse_coherences, galvanic_coherences, control_coherences)
-%}

@@ -28,30 +28,21 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
             stim_coherences = 0;
         end
         load(strcat(output_stimpath, "/decisions.mat"), "decisions")
-        if plot_name == "p1_wins"
-            analyze_coherences = stim_coherences;
-        elseif plot_name == "p1_loses"
-            analyze_coherences = stim_coherences;
-        else
-            analyze_coherences = ex_c;
-        end
-        for ex_c = analyze_coherences
-            for trial = start_trial:end_trial
-                relative_trial = trial - start_trial + 1;
-                if (plot_name == "p1_wins" && decisions(relative_trial, stim_coherences==ex_c) ~= 1) || ...
-                        (plot_name == "p1_loses" && decisions(relative_trial, stim_coherences==ex_c) ~= 2)
-                    stim_frs(j, relative_trial, :) = NaN;
-                    continue
-                end
-                load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, trial])), ...
-                    "recspikes")
-                g1_taskfrs = zeros(num_group, 1);
-                for nn = 1:num_group
-                    spiketimes = t(recspikes(int2str(nn)));
-                    g1_taskfrs(nn) = sum(spiketimes>=win_start & spiketimes<win_stop) / (win_stop - win_start);
-                end
-                stim_frs(j, trial, :) = g1_taskfrs;
+        for trial = start_trial:end_trial
+            relative_trial = trial - start_trial + 1;
+            if (plot_name == "p1_wins" && decisions(relative_trial, stim_coherences==ex_c) ~= 1) || ...
+                    (plot_name == "p1_loses" && decisions(relative_trial, stim_coherences==ex_c) ~= 2)
+                stim_frs(j, relative_trial, :) = NaN;
+                continue
             end
+            load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, trial])), ...
+                "recspikes")
+            g1_taskfrs = zeros(num_group, 1);
+            for nn = 1:num_group
+                spiketimes = t(recspikes(int2str(nn)));
+                g1_taskfrs(nn) = sum(spiketimes>=win_start & spiketimes<win_stop) / (win_stop - win_start);
+            end
+            stim_frs(j, trial, :) = g1_taskfrs;
         end
     end
     pulse_frs = reshape(mean(stim_frs(1, :, :), 2, 'omitnan'), [num_group, 1]);
@@ -77,12 +68,58 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
         title("Connected")
     end
     
+    %Full Population Aggregated Activity
     popmean_pulse = reshape(mean(stim_frs(1, :, :), 3, 'omitnan'), [num_trials, 1]);
     popmean_galvanic = reshape(mean(stim_frs(2, :, :), 3, 'omitnan'), [num_trials, 1]);
     norm_pulse = popmean_pulse - ctrl_mean;
     norm_galvanic = popmean_galvanic - ctrl_mean;
     stim_means = [mean(norm_galvanic), mean(norm_pulse)];
+    figure;
+    set(gca, 'fontsize', 18)
+    hold on
+    b = bar(stim_means);
+    b.FaceColor = 'flat';
+    b.CData = [default_colors(5, :); default_colors(7, :)];
+    plot([ones(1, num_trials); 2*ones(1, num_trials)], [norm_galvanic'; norm_pulse'], 'ko-')
+    hold off
+    xticks([1, 2])
+    xticklabels(["Galvanic", "Pulsatile"])
+    ylabel("Change in Firing Rate (spk/s)")
+    if contains(sim_name, "Discon")
+        title("Disconnected")
+    else
+        title("Connected")
+    end
     
+    %Affected P1 Aggregated
+    popmean_pulse = reshape(mean(stim_frs(1, :, 1:num_affected), 3, 'omitnan'), [num_trials, 1]);
+    popmean_galvanic = reshape(mean(stim_frs(2, :, 1:num_affected), 3, 'omitnan'), [num_trials, 1]);
+    norm_pulse = popmean_pulse - ctrl_mean;
+    norm_galvanic = popmean_galvanic - ctrl_mean;
+    stim_means = [mean(norm_galvanic), mean(norm_pulse)];
+    figure;
+    set(gca, 'fontsize', 18)
+    hold on
+    b = bar(stim_means);
+    b.FaceColor = 'flat';
+    b.CData = [default_colors(5, :); default_colors(7, :)];
+    plot([ones(1, num_trials); 2*ones(1, num_trials)], [norm_galvanic'; norm_pulse'], 'ko-')
+    hold off
+    xticks([1, 2])
+    xticklabels(["Galvanic", "Pulsatile"])
+    ylabel("Change in Firing Rate (spk/s)")
+    if contains(sim_name, "Discon")
+        title("Disconnected")
+    else
+        title("Connected")
+    end
+    
+    %Unaffected P1 Aggregated
+    popmean_pulse = reshape(mean(stim_frs(1, :, num_affected+1:end), 3, 'omitnan'), [num_trials, 1]);
+    popmean_galvanic = reshape(mean(stim_frs(2, :, num_affected+1:end), 3, 'omitnan'), [num_trials, 1]);
+    norm_pulse = popmean_pulse - ctrl_mean;
+    norm_galvanic = popmean_galvanic - ctrl_mean;
+    stim_means = [mean(norm_galvanic), mean(norm_pulse)];
     figure;
     set(gca, 'fontsize', 18)
     hold on

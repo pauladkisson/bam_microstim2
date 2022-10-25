@@ -38,9 +38,9 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
         for ex_c = analyze_coherences
             for trial = start_trial:end_trial
                 relative_trial = trial - start_trial + 1;
-                if (plot_name == "p1_wins" && final_decisions(relative_trial, stim_coherences==ex_c) ~= 1) || ...
-                        (plot_name == "p1_loses" && final_decisions(relative_trial, stim_coherences==ex_c) ~= 2)
-                    stim_frs(j, trial, :) = NaN;
+                if (plot_name == "p1_wins" && decisions(relative_trial, stim_coherences==ex_c) ~= 1) || ...
+                        (plot_name == "p1_loses" && decisions(relative_trial, stim_coherences==ex_c) ~= 2)
+                    stim_frs(j, relative_trial, :) = NaN;
                     continue
                 end
                 load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, trial])), ...
@@ -72,6 +72,29 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     xlabel("Distance from Electrode (um)")
     ylabel("Firing Rate (spk/s)")
     if sim_name == "EMBC Disconnected" || sim_name == "DepolBlockDiscon" || sim_name == "Test"
+        title("Disconnected")
+    else
+        title("Connected")
+    end
+    
+    popmean_pulse = reshape(mean(stim_frs(1, :, :), 3, 'omitnan'), [num_trials, 1]);
+    popmean_galvanic = reshape(mean(stim_frs(2, :, :), 3, 'omitnan'), [num_trials, 1]);
+    norm_pulse = popmean_pulse - ctrl_mean;
+    norm_galvanic = popmean_galvanic - ctrl_mean;
+    stim_means = [mean(norm_galvanic), mean(norm_pulse)];
+    
+    figure;
+    set(gca, 'fontsize', 18)
+    hold on
+    b = bar(stim_means);
+    b.FaceColor = 'flat';
+    b.CData = [default_colors(5, :); default_colors(7, :)];
+    plot([ones(1, num_trials); 2*ones(1, num_trials)], [norm_galvanic'; norm_pulse'], 'ko-')
+    hold off
+    xticks([1, 2])
+    xticklabels(["Galvanic", "Pulsatile"])
+    ylabel("Change in Firing Rate (spk/s)")
+    if contains(sim_name, "Discon")
         title("Disconnected")
     else
         title("Connected")

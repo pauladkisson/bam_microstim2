@@ -20,11 +20,11 @@ num_trials = length(trials);
 %pulse_coherences = 0;
 control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
 pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-
+%galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8] / 100;
 
 pulse_amps = [-10*1e-6];
-dc_amps = [-1.4, 0]*1e-6;
+dc_amps = [1.4, 0]*1e-6;
 stim_amps = [pulse_amps, dc_amps];
 
 for j = 1:length(stim_amps)

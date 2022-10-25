@@ -53,7 +53,7 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, num_bat
     hold on
     scatter(control_coherences, ctrl_acc, 'k', 'filled')
     scatter(pulse_coherences, pulse_acc, [], default_colors(7, :).*ones(length(pulse_acc), 3), 'filled')
-    scatter(galvanic_coherences, galvanic_acc, [], default_colors(5, :).*ones(length(pulse_acc), 3), 'filled')
+    scatter(galvanic_coherences, galvanic_acc, [], default_colors(5, :).*ones(length(galvanic_acc), 3), 'filled')
     plot(c, control_w, "k")
     plot(c, galvanic_w, 'Color', default_colors(5, :))
     plot(c, pulse_w, 'Color', default_colors(7, :))
@@ -92,6 +92,7 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, num_bat
     trialmean_ctrl = mean(ctrl_dt, 1, 'omitnan');
     trialstd_ctrl = std(ctrl_dt, [], 1, 'omitnan');
     figure;
+    set(gca, 'fontsize', 18);
     hold on
     errorbar(pulse_coherences, trialmean_pulse, trialstd_pulse/sqrt(num_trials), 'Color', default_colors(7, :))
     errorbar(galvanic_coherences, trialmean_galvanic, trialstd_galvanic/sqrt(num_trials), 'Color', default_colors(5, :))

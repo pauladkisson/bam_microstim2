@@ -89,7 +89,7 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
 %% Plot Firing Rate Distribution over distance from electrode
 win_start = t_taskoff - 0.1; %+ stim_ind*dt; % to account for onset spike of pulse
 win_stop = t_taskoff;
-ex_c = [25.6, 25.6, 25.6]/100;
+ex_c = [-55, -55, 0]/100;
 %  plot_name = 'ex_c' or 'p1_wins' or 'p1_loses'
 plot_name = "p1_wins";
 plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, ...

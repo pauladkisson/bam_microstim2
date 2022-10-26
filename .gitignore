@@ -1,5 +1,6 @@
 Simulation*
 ._*
+.DS_Store
 *.asv
 Figures*
 .ipynb*

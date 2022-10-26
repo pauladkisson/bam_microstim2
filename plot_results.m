@@ -1,33 +1,33 @@
 %% Simulation Parameters
 clear;
-sim_name = "Brainless_m=0_Con";
+sim_name = "Test";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
 default_colors = get(gca, "colororder");
 
 start_trial = 1;
-end_trial = 28;
+end_trial = 1;
 num_trials = end_trial - start_trial + 1;
 num_batch = 3;
 
-%control_coherences = 0;
-%galvanic_coherences = 0;
-%pulse_coherences = 0;
-control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
-pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+control_coherences = 0;
+galvanic_coherences = 0;
+pulse_coherences = 0;
+%control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
+%pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+%galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
 %galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
 
 pulse_amps = [-10*1e-6];
-dc_amps = [-1.4, 0]*1e-6;
+dc_amps = [-1, 0]*1e-6;
 stim_amps = [pulse_amps, dc_amps];
 
 %% Plot Firing Rates
-ex_c = 0.55;
-ex_trial = 10;
+ex_c = 0;
+ex_trial = 1;
 ex_stim_j = 2;
-plot_name = "single_stim"; % 'single_stim' or 'subplot' or 'p1_only'
+plot_name = "subplot"; % 'single_stim' or 'subplot' or 'p1_only'
 plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
                   t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, plot_name);
 

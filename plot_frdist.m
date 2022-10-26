@@ -11,6 +11,7 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     for j = 1:length(stim_amps)
         stim_amp = stim_amps(j);
         pulse = j<=length(pulse_amps);
+        c = ex_c(j);
         if pulse
             output_stimpath = sprintf("Simulation %s/data/%0.2fuA_pulse", ...
                 [sim_name, stim_amp*1e6]);
@@ -30,12 +31,12 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
         load(strcat(output_stimpath, "/decisions.mat"), "decisions")
         for trial = start_trial:end_trial
             relative_trial = trial - start_trial + 1;
-            if (plot_name == "p1_wins" && decisions(relative_trial, stim_coherences==ex_c) ~= 1) || ...
-                    (plot_name == "p1_loses" && decisions(relative_trial, stim_coherences==ex_c) ~= 2)
+            if (plot_name == "p1_wins" && decisions(relative_trial, stim_coherences==c) ~= 1) || ...
+                    (plot_name == "p1_loses" && decisions(relative_trial, stim_coherences==c) ~= 2)
                 stim_frs(j, relative_trial, :) = NaN;
                 continue
             end
-            load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, trial])), ...
+            load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
                 "recspikes")
             g1_taskfrs = zeros(num_group, 1);
             for nn = 1:num_group
@@ -73,7 +74,7 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     popmean_galvanic = reshape(mean(stim_frs(2, :, :), 3, 'omitnan'), [num_trials, 1]);
     norm_pulse = popmean_pulse - ctrl_mean;
     norm_galvanic = popmean_galvanic - ctrl_mean;
-    stim_means = [mean(norm_galvanic), mean(norm_pulse)];
+    stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_pulse, 'omitnan')];
     figure;
     set(gca, 'fontsize', 18)
     hold on
@@ -90,13 +91,12 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     else
         title("Connected")
     end
-    
     %Affected P1 Aggregated
     popmean_pulse = reshape(mean(stim_frs(1, :, 1:num_affected), 3, 'omitnan'), [num_trials, 1]);
     popmean_galvanic = reshape(mean(stim_frs(2, :, 1:num_affected), 3, 'omitnan'), [num_trials, 1]);
     norm_pulse = popmean_pulse - ctrl_mean;
     norm_galvanic = popmean_galvanic - ctrl_mean;
-    stim_means = [mean(norm_galvanic), mean(norm_pulse)];
+    stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_pulse, 'omitnan')];
     figure;
     set(gca, 'fontsize', 18)
     hold on
@@ -119,7 +119,7 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     popmean_galvanic = reshape(mean(stim_frs(2, :, num_affected+1:end), 3, 'omitnan'), [num_trials, 1]);
     norm_pulse = popmean_pulse - ctrl_mean;
     norm_galvanic = popmean_galvanic - ctrl_mean;
-    stim_means = [mean(norm_galvanic), mean(norm_pulse)];
+    stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_pulse, 'omitnan')];
     figure;
     set(gca, 'fontsize', 18)
     hold on

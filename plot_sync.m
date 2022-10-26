@@ -2,7 +2,7 @@
 %%% 2/14/2022
 %%% Plot Synchrony
 function plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
-                        N_end, win_start, win_stop, c_win, c, ...
+                        N_end, win_start, win_stop, c_win, ex_c, ...
                         pulse_coherences, galvanic_coherences, control_coherences, ...
                         start_trial, end_trial, num_trials, symmetric)
     for sim_name = sim_names
@@ -10,28 +10,26 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
         
         stim_sync = zeros(length(stim_amps), num_trials, num_group, num_group);
         for j = 1:length(stim_amps)
+            c = ex_c(j);
             stim_amp = stim_amps(j);
             pulse = j<=length(pulse_amps);
             if pulse
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_pulse", ...
                     [sim_name stim_amp*1e6]);
-                %stim_coherences = pulse_coherences;
+                stim_coherences = pulse_coherences;
                 disp("Pulsatile")
             else
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                     [sim_name, stim_amp*1e6]);
                 if stim_amp == 0
-                    %stim_coherences = control_coherences;
+                    stim_coherences = control_coherences;
                     disp("Control")
                 else
-                    %stim_coherences = galvanic_coherences;
+                    stim_coherences = galvanic_coherences;
                     disp("Galvanic")
                 end
             end
-            %load(strcat(output_stimpath, "/decisions.mat"), "decisions")
-            load(sprintf("Simulation %s/data/0.00uA_galvanic/decisions.mat", ...
-                    sim_name), 'decisions'); %using only control decisions
-            stim_coherences = control_coherences;
+            load(strcat(output_stimpath, "/decisions.mat"), "decisions")
             for trial = start_trial:end_trial
                 fprintf("Trial %0.0f \n", trial)
                 if sim_name==sim_names(1) && decisions(trial, stim_coherences==c) ~= 1

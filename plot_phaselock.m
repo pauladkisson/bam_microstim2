@@ -3,7 +3,7 @@
 %%% Plot Phase Locking
 function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, stim_freq, ...
                         num_group, num_affected, top_N, win_start, win_stop, idx_diff, ...
-                        default_colors, start_trial, end_trial, num_trials, ...
+                        default_colors, start_trial, end_trial, num_trials, ex_c, ...
                         pulse_coherences, galvanic_coherences, control_coherences)
     assert(win_start>=t_task & win_start<t_taskoff, "Start of plotting window must be during task")
     assert(win_stop>t_task & win_stop<=t_taskoff, "End of plotting window must be during task")
@@ -16,6 +16,7 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         load(sprintf("Simulation %s/ustim/r.mat", sim_name), "ball_r")
         ball_rs = get_ball_rs(ball_r, num_affected, num_group);
         for j = 1:length(stim_amps)
+            c = ex_c(j);
             stim_amp = stim_amps(j);
             pulse_trialmean = j<=length(pulse_amps);
             if pulse_trialmean
@@ -38,7 +39,7 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
                     stim_sync(j, relative_trial, :) = NaN;
                     continue %skip trials where P1 doesn't win
                 end
-                load(strcat(output_stimpath, sprintf("/c=0.000/trial%0.0f.mat", trial)), ...
+                load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
                     "recspikes")
                 perc_sync = zeros(num_group, 1);
                 for nn = 1:num_group
@@ -65,30 +66,21 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         pulse_trialmean = mean(pulse_sync, 1, 'omitnan');
         galvanic_trialmean = mean(galvanic_sync, 1, 'omitnan');
         control_trialmean = mean(control_sync, 1, 'omitnan');
-        if contains(sim_name, "Discon") %use shape = '^' instead on next refactor
-            figure(1);
-            hold on
-            scatter(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), ...
-                [], default_colors(5, :), 'filled')
-            scatter(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), ...
-                [], "k", 'filled')
-            scatter(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), ...
-                [], default_colors(7, :), 'filled')
-            hold off
-            xlabel("Distance from Electrode (um)")
-            ylabel("Percent of Phaselocked Spikes (%)")
+        if contains(sim_name, "Discon")
+            plot_shape = 'o';
         else
-            figure(1);
-            hold on
-            scatter(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), ...
-                [], default_colors(5, :), 'filled', '^')
-            scatter(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), ...
-                [], "k", 'filled', '^')
-            scatter(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), ...
-                [], default_colors(7, :), 'filled', '^')
-            hold off
-            xlabel("Distance from Electrode (um)")
-            ylabel("Percent of Phaselocked Spikes (%)")
+            plot_shape = '^';
         end
+        figure(1);
+        hold on
+        scatter(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), ...
+            [], default_colors(5, :), 'filled', plot_shape)
+        scatter(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), ...
+            [], "k", 'filled', plot_shape)
+        scatter(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), ...
+            [], default_colors(7, :), 'filled', plot_shape)
+        hold off
+        xlabel("Distance from Electrode (um)")
+        ylabel("Percent of Phaselocked Spikes (%)")
     end
 end

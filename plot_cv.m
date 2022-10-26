@@ -71,13 +71,13 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_gr
         legend(["Pulsatile", "Galvanic", "Control"])
     
     elseif plot_name == "p1_wins"
-        ball_rs = zeros(num_group, 1);
         figure(1);
         for sim_name = sim_names
             stim_cv = zeros(length(stim_amps), num_trials, num_group);
             load(sprintf("Simulation %s/ustim/r.mat", sim_name), 'ball_r')
             ball_rs = get_ball_rs(ball_r, num_affected, num_group);
             for j = 1:length(stim_amps)
+                c = ex_c(j);
                 stim_amp = stim_amps(j);
                 pulse = j<=length(pulse_amps);
                 if pulse
@@ -103,7 +103,7 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_gr
                         stim_cv(j, relative_trial, :) = NaN;
                         continue %skip trials where P1 doesn't win
                     end
-                    load(strcat(output_stimpath, sprintf("/c=0.000/trial%0.0f.mat", trial)), ...
+                    load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
                         "recspikes")
                     isi = zeros(length(t), num_group);
                     for nn = 1:num_group
@@ -136,30 +136,21 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_gr
             control_trialmean = mean(control_cv, 1, 'omitnan');
 
             if contains(sim_name, "Discon")
-                figure(1);
-                hold on
-                scatter(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), ...
-                    [], default_colors(5, :), 'filled')
-                scatter(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), ...
-                    [], "k", 'filled')
-                scatter(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), ...
-                    [], default_colors(7, :), 'filled')
-                hold off
-                xlabel("Distance from Electrode (um)")
-                ylabel("Coefficient of Variation (unitless)")
+                plot_shape = 'o';
             else
-                figure(1);
-                hold on
-                scatter(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), ...
-                    [], default_colors(5, :), 'filled', '^')
-                scatter(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), ...
-                    [], "k", 'filled', '^')
-                scatter(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), ...
-                    [], default_colors(7, :), 'filled', '^')
-                hold off
-                xlabel("Distance from Electrode (um)")
-                ylabel("Coefficient of Variation (unitless)")
+                plot_shape = '^';
             end
+            figure(1);
+            hold on
+            scatter(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), ...
+                [], default_colors(5, :), 'filled', plot_shape)
+            scatter(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), ...
+                [], "k", 'filled', plot_shape)
+            scatter(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), ...
+                [], default_colors(7, :), 'filled', plot_shape)
+            hold off
+            xlabel("Distance from Electrode (um)")
+            ylabel("Coefficient of Variation (unitless)")
         end
     end
 end

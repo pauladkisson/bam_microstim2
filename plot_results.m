@@ -17,17 +17,17 @@ num_batch = 3;
 control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
 pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
 %galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8] / 100;
+galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
 
 pulse_amps = [-10*1e-6];
 dc_amps = [1.4, 0]*1e-6;
 stim_amps = [pulse_amps, dc_amps];
 
 %% Plot Firing Rates
-ex_c = 0.256;
-ex_trial = 7;
+ex_c = 0.55;
+ex_trial = 10;
 ex_stim_j = 2;
-plot_name = "p1_only"; % 'single_stim' or 'subplot' or 'p1_only'
+plot_name = "single_stim"; % 'single_stim' or 'subplot' or 'p1_only'
 plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
                   t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, plot_name);
 
@@ -50,7 +50,8 @@ win_size = floor(0.250 / dt); %250ms moving window
 cv_window = t >= 2.5 & t<3; %Plotting window
 ex_neuron = 7;
 ex_trial = 1;
-top_N = floor(0.1*num_group);
+top_N = floor(1*num_group);
+ex_c = 0;
 plot_name = "p1_wins"; %ex_neuron or 'ex_trial' or 'p1_wins'
 sim_names = ["Brainless_m=0_Con", "Brainless_m=0_Discon"]; % [Connected, Disconnected]
 plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_group, ...
@@ -89,7 +90,7 @@ win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
 win_stop = t_task + 0.1 + stim_ind*dt;
 ex_c = 0;
 %  plot_name = 'ex_c' or 'p1_wins' or 'p1_loses'
-plot_name = "ex_c";
+plot_name = "p1_loses";
 plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...

@@ -23,13 +23,16 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, num_bat
                 [sim_name, stim_amp*1e6]);
             stim_coherences = galvanic_coherences;
         end
-        load(strcat(datapath, "/decisions.mat"), "avg_acc", "decisions", "batch_coeffs");
+        load(strcat(datapath, "/decisions.mat"), "avg_acc", "decisions", "batch_coeffs", "percent_nodec");
         if pulse
             pulse_acc = avg_acc;
+            pulse_nodec = percent_nodec;
         elseif stim_amp == 0
             ctrl_acc = avg_acc;
+            ctrl_nodec = percent_nodec;
         else
             galvanic_acc = avg_acc;
+            galvanic_nodec = percent_nodec;
         end
         [nodec_trial, nodec_c] = find(~decisions);
         for nodec = 1:length(nodec_trial)
@@ -104,4 +107,15 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, num_bat
     xlabel("Coherence (%)")
     ylabel("Decision Time (s)")
     legend("Pulsatile", "Galvanic", "Control")
+    
+    %No-decisions
+    figure;
+    set(gca, 'fontsize', 18);
+    hold on
+    scatter(pulse_coherences, pulse_nodec*100, [], default_colors(7, :).*ones(length(pulse_nodec), 3), 'filled')
+    scatter(galvanic_coherences, galvanic_nodec*100, [], default_colors(5, :).*ones(length(galvanic_nodec), 3), 'filled')
+    scatter(control_coherences, ctrl_nodec*100, 'k', 'filled') 
+    hold off
+    xlabel("Coherence (%)")
+    ylabel("% of trials No-Decision")
 end

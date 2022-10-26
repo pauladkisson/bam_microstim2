@@ -62,7 +62,7 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     hold off
     xlabel("Distance from Electrode (um)")
     ylabel("Firing Rate (spk/s)")
-    if sim_name == "EMBC Disconnected" || sim_name == "DepolBlockDiscon" || sim_name == "Test"
+    if contains(sim_name, "Discon")
         title("Disconnected")
     else
         title("Connected")

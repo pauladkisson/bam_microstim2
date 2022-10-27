@@ -1,6 +1,6 @@
 %% Simulation Parameters
 clear;
-sim_name = "PR=500Hz_Discon";
+sim_name = "Test_psval";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
@@ -19,8 +19,9 @@ pulse_coherences = 0;
 %galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
 %galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
 
-pulse_amps = [-50*1e-6];
-dc_amps = [-1.4, 0]*1e-6;
+pulse_amps = [-10*1e-6];
+%dc_amps = [-1.4, 0]*1e-6;
+dc_amps = [];
 stim_amps = [pulse_amps, dc_amps];
 
 %% Plot Firing Rates
@@ -101,3 +102,9 @@ plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, .
 %% Plot Decisions and Decision Times
 plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, num_batch, ...
                pulse_coherences, galvanic_coherences, control_coherences, num_trials);
+           
+%% Plot Pulsatile Blocking Validation
+plot_name = "spont"; %"amp" or "spont"
+ex_amp = -100e-6;
+ex_spont = 1800;
+plot_psval(sim_path, plot_name, pulse_amps, ex_amp, ex_spont)

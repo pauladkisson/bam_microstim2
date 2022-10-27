@@ -6,28 +6,44 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
     tic;
     mkdir(sim_path)
     dt = 0.05e-3; %ms
-    t_span = 4;
+    if sim_type=="ps_val"
+        t_span = 1;
+    else
+        t_span = 4;
+    end
     t = 0:dt:t_span;
 
     %% Network Parameters
-    if sim_type=='discon'
+    if sim_type=="discon"
         percent_size = 0.15;
         f = 0.5;
+        p = 2; % Number of different types of stimuli
+        N_E = floor(1600 * percent_size);
         N_I = 0;
         w_plus = 0;
         w_minus = 0;
         w = 0;
-    elseif sim_type=='con'
+    elseif sim_type=="con"
         percent_size = 0.5;
         f = 0.15;
+        p = 2; % Number of different types of stimuli
+        N_E = floor(1600 * percent_size);
         N_I = floor(400 * percent_size);
         w_plus = 1.7; % Strength of "strong" synapses in the BAM network
         w_minus = 1 - f*(w_plus - 1)/(1-f); %Strength of "weak" synapses in BAM
         w = 1; %Strength of normal synapses in BAM
+    elseif sim_type=="ps_val"
+        true_amps = [0, 50, 75, 100, 150, 200, 300]*(-1e-6);
+        num_amps = length(true_amps);
+        N_E = 100*num_amps;
+        N_I = 0;
+        f = 1;
+        p = 1;
+        w_plus = 0;
+        w_minus = 0;
+        w = 0;
     end
-    N_E = floor(1600 * percent_size);
     N = N_E + N_I;
-    p = 2; % Number of different types of stimuli
     num_selective = floor(p*f*N_E);
     num_group = floor(f*N_E);
     GenerateBAM(N_E, N_I, f, p, w_plus, w_minus, w, sim_path);
@@ -41,12 +57,21 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
     G_ampa_ext = [2.1, 1.62]*1e-9; %nS
     coherences = union(union(pulse_coherences, galvanic_coherences), control_coherences, 'sorted');
     max_fr_task = 80;
-    t_task = 1;
-    t_taskoff = 3;
     m = 0; %modulation strength
     f0 = 40; %modulation frequency
-    GenerateSpikes(fr_bg, m, f0, max_fr_task, coherences, f, N_E, N_I, t_task, ...
-        t_taskoff, t, start_trial, end_trial, sim_path)
+    if sim_type=="ps_val"
+        t_task = 0;
+        t_taskoff = t_span;
+        fr_bgs = 1800:100:3600;
+        end_trial = length(fr_bgs);
+        GeneratePopSpikes(sim_path, fr_bgs, coherences, N, t, ...
+            start_trial, end_trial);
+    else
+        t_task = 1;
+        t_taskoff = 3;
+        GenerateSpikes(fr_bg, m, f0, max_fr_task, coherences, f, N_E, N_I, t_task, ...
+            t_taskoff, t, start_trial, end_trial, sim_path)
+    end
 
     %% LIF Parameters
     % Parameter = [pyramidal, interneuron]
@@ -76,10 +101,34 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
     min_r = 10e-6; %Minimum distance of 10um
     max_r = 2e-3; %Maximum distance of 2mm (Levitt et al.)
     thresh_cor = 0.211; %Threshold correction factor for pulses
-    plot_microstim = false;
-    GenerateMicroStim(t, t_task, t_taskoff, stim_duration, stim_freq, ...
+    plot_ustim = false;
+    if sim_type=="ps_val"
+        true_freqs = 0:3:floor((N/num_amps-1)*3); %Hz
+        num_freqs = length(true_freqs);
+        stim_freqs = zeros(N, 1);
+        for j = 1:num_freqs
+            freq = true_freqs(j);
+            stim_freqs(j:floor(N/num_amps):end) = freq;
+        end
+        ps_stim_amps = zeros(N, 1);
+        for i = 1:num_amps
+            true_amp = true_amps(i);
+            if i == 1
+                start_idx = 1;
+            else
+                start_idx = floor(N/num_amps*(i-1)) + 1;
+            end
+            end_idx = floor(N/num_amps*i);
+            ps_stim_amps(start_idx:end_idx) = true_amp*ones(floor(N/num_amps), 1);
+        end
+        %Note pulse_amps is a dummy variable to ensure compatibility with main 
+        GeneratePopMicroStim(t, t_task, t_taskoff, stim_duration, stim_freqs, ...
+            gL(1), ps_stim_amps, pulse_amps, N, sim_path, plot_ustim);
+    else
+        GenerateMicroStim(t, t_task, t_taskoff, stim_duration, stim_freq, ...
                       min_r, max_r, num_affected, thresh_cor, gL(1), ...
-                      pulse_amps, dc_amps, N, sim_path, plot_microstim)
+                      pulse_amps, dc_amps, N, sim_path, plot_ustim)
+    end
 
     %% Firing Rate Parameters
     win_size = 5e-3;

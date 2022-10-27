@@ -3,7 +3,7 @@
 %%% Main Body of Wang (2002) Biophysical Attractor Model
 
 clear;
-sim_name = "Test";
+sim_name = "Test_psval";
 sim_path = sprintf("Simulation %s", sim_name);
 tic;
 load(strcat(sim_path, "/bam_constants.mat"))

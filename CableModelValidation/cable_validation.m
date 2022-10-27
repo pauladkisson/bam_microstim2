@@ -114,7 +114,7 @@ z_bounds = [10, 20].*10^(-4);
 z_thresh = z_bounds(1);
 z_res = 0.1*10^(-4);
 I_els = [-5, -10, -20]; %uA
-I_ints = [0, 0.5, 1, 1.5, 2, 2.2, 2.4]*1e-6; %uA-->pA
+I_ints = [0, 0.5, 1, 1.5, 2, 2.2, 2.3]*1e-6; %uA-->pA
 depols = zeros(size(I_ints));
 depol_thresholds = zeros(length(I_els), length(I_ints));
 for j = 1:length(I_els)
@@ -151,7 +151,7 @@ save("threshold_correction.mat", 'depol_thresholds', 'depols', 'I_ints', 'I_els'
 load("threshold_correction.mat") 
 bounds = [0, 1]; %thresh correction bounds
 options = optimset('Display','iter');
-eval_fn = @(thresh_cor) eval_thresh_cor(I_els, depol_thresholds, thresh_cor);
+eval_fn = @(thresh_cor) eval_thresh_cor(I_els, depol_thresholds, thresh_cor, depols);
 thresh_cor_star = fminbnd(eval_fn, bounds(1), bounds(2), options);
 save("threshold_correction.mat", 'depol_thresholds', 'depols', 'I_ints', ...
     'I_els', 'thresh_cor_star');
@@ -186,8 +186,8 @@ cmap = turbo(length(lin_I_els));
 for j = 1:length(I_els)
     I_el = I_els(j);
     I_color = cmap(lin_I_els==I_el, :);
-    plot(depols(1:end-1), depol_thresholds(j, :)*10^4, 'o-', 'Linewidth', 4, 'Color', I_color)
-    plot(depols(1:end-1), lif_depol_thresholds(j, :)*10^4, '--', 'Linewidth', 4, 'Color', I_color)
+    plot(depols, depol_thresholds(j, :)*10^4, 'o-', 'Linewidth', 4, 'Color', I_color)
+    plot(depols, lif_depol_thresholds(j, :)*10^4, '--', 'Linewidth', 4, 'Color', I_color)
 end
 colormap(cmap)
 c = colorbar('Ticks', [0, I_els./I_els(end)], 'TickLabels', [0, compose("%0.0f", abs(I_els))]);
@@ -204,7 +204,7 @@ for j = 1:length(I_els)
     I_el = I_els(j);
     I_color = cmap(lin_I_els==I_el, :);
     err = depol_thresholds(j, :) - lif_depol_thresholds(j, :);
-    plot(depols(1:end-1), err*1e4, 'o-', 'Linewidth', 4, 'Color', I_color)
+    plot(depols, err*1e4, 'o-', 'Linewidth', 4, 'Color', I_color)
 end
 colormap(cmap)
 c = colorbar('Ticks', [0, I_els./I_els(end)], 'TickLabels', [0, compose("%0.0f", abs(I_els))]);

@@ -2,30 +2,31 @@
 %%% 9.6.21
 %%% Purpose: Calculate decision time and accuracy from population firing
 %%% rates
-sim_name = "PR=500Hz_Discon";
+sim_name = "PR=500Hz_Con";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 
 
 num_batch = 3;
-connected = false;
+connected = true;
 
 start_trial = 1;
 end_trial = 28;
 trials = start_trial:end_trial;
 num_trials = length(trials);
 
-control_coherences = 0;
-galvanic_coherences = 0;
-pulse_coherences = 0;
-%control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
+%control_coherences = 0;
+%galvanic_coherences = 0;
+%pulse_coherences = 0;
+control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
 %pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+pulse_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2, 100]/100;
 %galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-%galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
+galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
 
 pulse_amps = [-50*1e-6];
 %pulse_amps = [];
-dc_amps = [-1.4, 0]*1e-6;
+dc_amps = [1.4, 0]*1e-6;
 %dc_amps = [];
 stim_amps = [pulse_amps, dc_amps];
 

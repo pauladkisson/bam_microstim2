@@ -69,6 +69,10 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
         title("Connected")
     end
     
+    %percent activated
+    ps_perc_act = sum(pulse_frs > (ctrl_mean + 3*ctrl_std)) / num_affected
+    gs_perc_act = sum(galvanic_frs > (ctrl_mean + 3*ctrl_std)) / num_affected
+    
     %Full Population Aggregated Activity
     popmean_pulse = reshape(mean(stim_frs(1, :, :), 3, 'omitnan'), [num_trials, 1]);
     popmean_galvanic = reshape(mean(stim_frs(2, :, :), 3, 'omitnan'), [num_trials, 1]);

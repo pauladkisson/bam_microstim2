@@ -3,29 +3,33 @@
 %%% Purpose Generate micro-stimulation current for a variety of PRs and
 %%% Amplitudes
 function GeneratePopMicroStim(t, t_task, t_taskoff, stim_duration, stim_freqs, ...
-            gL, stim_amps, pulse_amp, N, sim_path, plot_ustim)
+            gL, stim_amps, save_amp, N, sim_path, plot_ustim)
     I_ustim_base = zeros(length(t), N);
     dt = t(2) - t(1);
-    for j = 1:length(stim_freqs)
-        stim_amp = stim_amps(j);
-        stim_freq = stim_freqs(j);
-        for i = 1:length(t) 
-            if floor(1/(stim_freq*dt)) >= length(t)
-                mod_i = i;
-            else
-                mod_i = mod(i, floor(1/(stim_freq*dt))) + 1;
-            end
-            if t(mod_i) <=  stim_duration
-                I_ustim_base(i, j) = stim_amp;
-            elseif t(mod_i) > stim_duration && t(mod_i) <= 2*stim_duration
-                I_ustim_base(i, j) = -stim_amp;
+    if stim_freqs
+        for j = 1:length(stim_freqs)
+            stim_amp = stim_amps(j);
+            stim_freq = stim_freqs(j);
+            for i = 1:length(t) 
+                if floor(1/(stim_freq*dt)) >= length(t)
+                    mod_i = i;
+                else
+                    mod_i = mod(i, floor(1/(stim_freq*dt))) + 1;
+                end
+                if t(mod_i) <=  stim_duration
+                    I_ustim_base(i, j) = stim_amp;
+                elseif t(mod_i) > stim_duration && t(mod_i) <= 2*stim_duration
+                    I_ustim_base(i, j) = -stim_amp;
+                end
             end
         end
+    else
+        I_ustim_base = zeros(length(t), N);
+        for j = 1:length(stim_amps)
+            stim_amp = stim_amps(j);
+            I_ustim_base(:, j) = stim_amp;
+        end
     end
-
-    % TBD for galvanic
-    %else
-    %    I_ustim_base = ones(length(t), N)*stim_amp;
 
     I_ustim_base(t<t_task|t>t_taskoff, :) = 0;
 
@@ -39,11 +43,11 @@ function GeneratePopMicroStim(t, t_task, t_taskoff, stim_duration, stim_freqs, .
     basepath = strcat(sim_path, "/ustim");
     mkdir(basepath)
     save(strcat(basepath, "/r.mat"), 'ball_r')
-    save(strcat(basepath, sprintf("/%0.2fuA_pulse.mat", pulse_amp*1e6)), "I_ustim", 'Vmir')
-    %TBD for Galvanic
-    %else
-    %    save(strcat(basepath, sprintf("/%0.2fuA_galvanic.mat", stim_amp*1e6)), "I_ustim", 'Vmir')
-    %end
+    if stim_freqs
+        save(strcat(basepath, sprintf("/%0.2fuA_pulse.mat", save_amp*1e6)), "I_ustim", 'Vmir')
+    else
+        save(strcat(basepath, sprintf("/%0.2fuA_galvanic.mat", save_amp*1e6)), "I_ustim", 'Vmir')
+    end
 
     if plot_ustim
         figure;

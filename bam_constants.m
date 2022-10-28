@@ -6,7 +6,7 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
     tic;
     mkdir(sim_path)
     dt = 0.05e-3; %ms
-    if sim_type=="ps_val"
+    if sim_type=="ps_val" || sim_type=="gs_val"
         t_span = 1;
     else
         t_span = 4;
@@ -42,6 +42,17 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
         w_plus = 0;
         w_minus = 0;
         w = 0;
+    elseif sim_type=="gs_val"
+        true_amps = (0:5:600).*(-1e-6);
+        num_amps = length(true_amps);
+        num_reps = 5;
+        N_E = num_amps*num_reps;
+        N_I = 0;
+        f = 1;
+        p = 1;
+        w_plus = 0;
+        w_minus = 0;
+        w = 0;
     end
     N = N_E + N_I;
     num_selective = floor(p*f*N_E);
@@ -59,7 +70,7 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
     max_fr_task = 80;
     m = 0; %modulation strength
     f0 = 40; %modulation frequency
-    if sim_type=="ps_val"
+    if sim_type=="ps_val" || sim_type=="gs_val"
         t_task = 0;
         t_taskoff = t_span;
         fr_bgs = 1800:100:3600;
@@ -124,6 +135,16 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
         %Note pulse_amps is a dummy variable to ensure compatibility with main 
         GeneratePopMicroStim(t, t_task, t_taskoff, stim_duration, stim_freqs, ...
             gL(1), ps_stim_amps, pulse_amps, N, sim_path, plot_ustim);
+    elseif sim_type=="gs_val"
+        gs_stim_amps = zeros(N, 1);
+        for i = 1:num_amps
+            true_amp = true_amps(i);
+            start_idx = num_reps*(i-1) + 1;
+            end_idx = num_reps*i;
+            gs_stim_amps(start_idx:end_idx) = true_amp;
+        end
+        GeneratePopMicroStim(t, t_task, t_taskoff, stim_duration, [], ...
+            gL(1), gs_stim_amps, dc_amps(1), N, sim_path, plot_ustim);
     else
         GenerateMicroStim(t, t_task, t_taskoff, stim_duration, stim_freq, ...
                       min_r, max_r, num_affected, thresh_cor, gL(1), ...

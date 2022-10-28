@@ -1,6 +1,6 @@
 %% Simulation Parameters
 clear;
-sim_name = "Test_psval";
+sim_name = "PR=1kHz_Discon";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
@@ -18,10 +18,10 @@ pulse_coherences = 0;
 %pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
 %galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
 %galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
+%pulse_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2, 100]/100;
 
 pulse_amps = [-10*1e-6];
-%dc_amps = [-1.4, 0]*1e-6;
-dc_amps = [];
+dc_amps = [-1.4, 0]*1e-6;
 stim_amps = [pulse_amps, dc_amps];
 
 %% Plot Firing Rates
@@ -88,8 +88,8 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
                         start_trial, end_trial, num_trials, symmetric);
 
 %% Plot Firing Rate Distribution over distance from electrode
-win_start = t_taskoff - 0.1; %+ stim_ind*dt; % to account for onset spike of pulse
-win_stop = t_taskoff;
+win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
+win_stop = t_task + 0.1 + stim_ind*dt;
 %ex_c = [-55, -55, 0]/100;
 ex_c = [0, 0, 0];
 %  plot_name = 'ex_c' or 'p1_wins' or 'p1_loses'
@@ -108,3 +108,8 @@ plot_name = "spont"; %"amp" or "spont"
 ex_amp = -100e-6;
 ex_spont = 1800;
 plot_psval(sim_path, plot_name, pulse_amps, ex_amp, ex_spont)
+
+%% Plot Galvanic Blocking Validation
+save_amp = -1e-6;
+plot_name = "external"; %"internal" or "external" (current amplitude for plotting)
+plot_gsval(sim_path, save_amp, plot_name)

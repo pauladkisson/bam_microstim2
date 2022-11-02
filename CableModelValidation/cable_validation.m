@@ -151,13 +151,15 @@ save("threshold_correction.mat", 'depol_thresholds', 'depols', 'I_ints', 'I_els'
 load("threshold_correction.mat") 
 bounds = [0, 1]; %thresh correction bounds
 options = optimset('Display','iter');
-eval_fn = @(thresh_cor) eval_thresh_cor(I_els, depol_thresholds, thresh_cor, depols);
+eval_fn = @(thresh_cor) eval_thresh_cor(I_els, depol_thresholds(:,  1:end-1), thresh_cor, depols(1:end-1));
 thresh_cor_star = fminbnd(eval_fn, bounds(1), bounds(2), options);
 save("threshold_correction.mat", 'depol_thresholds', 'depols', 'I_ints', ...
     'I_els', 'thresh_cor_star');
 
 %% LIF Approximation: Depolarization vs Threshold at 5uA, 10uA, and 20uA
 load("threshold_correction.mat");
+depol_thresholds = depol_thresholds(:, 1:end-1);
+depols = depols(1:end-1);
 C = 0.5*1e-9; %nF
 gL = 25*1e-9; %nS
 EL = -70e-3; %mV

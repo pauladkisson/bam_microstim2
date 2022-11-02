@@ -1,13 +1,13 @@
 %% Simulation Parameters
 clear;
-sim_name = "Test_%act";
+sim_name = "Test_gsval";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
 default_colors = get(gca, "colororder");
 
 start_trial = 1;
-end_trial = 14;
+end_trial = 19;
 num_trials = end_trial - start_trial + 1;
 num_batch = 3;
 
@@ -16,12 +16,15 @@ galvanic_coherences = 0;
 pulse_coherences = 0;
 %control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
 %pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+%galvanic_coherences = [-100, -51.2, -30, -25.6, -20, -10, 0]/100;
 %galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
 %galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
 %pulse_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2, 100]/100;
 
-pulse_amps = [-10*1e-6];
-dc_amps = [-0.6, 0]*1e-6;
+%pulse_amps = [-10*1e-6];
+dc_amps = [-1]*1e-6;
+%dc_amps = [-0.6, 0]*1e-6;
+%dc_amps = [];
 stim_amps = [pulse_amps, dc_amps];
 
 %% Plot Firing Rates
@@ -111,5 +114,5 @@ plot_psval(sim_path, plot_name, pulse_amps, ex_amp, ex_spont)
 
 %% Plot Galvanic Blocking Validation
 save_amp = -1e-6;
-plot_name = "external"; %"internal" or "external" (current amplitude for plotting)
+plot_name = "internal"; %"internal" or "external" (current amplitude for plotting)
 plot_gsval(sim_path, save_amp, plot_name)

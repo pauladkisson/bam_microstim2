@@ -1,37 +1,37 @@
 %% Simulation Parameters
 clear;
-sim_name = "Test_gsval";
+sim_name = "Brainless_m=0_Con";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
 default_colors = get(gca, "colororder");
 
 start_trial = 1;
-end_trial = 19;
+end_trial = 28;
 num_trials = end_trial - start_trial + 1;
 num_batch = 3;
 
-control_coherences = 0;
-galvanic_coherences = 0;
-pulse_coherences = 0;
-%control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
-%pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+%control_coherences = 0;
+%galvanic_coherences = 0;
+%pulse_coherences = 0;
+control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
+pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
 %galvanic_coherences = [-100, -51.2, -30, -25.6, -20, -10, 0]/100;
-%galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-%galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
+galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+anodic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
 %pulse_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2, 100]/100;
 
-%pulse_amps = [-10*1e-6];
-dc_amps = [-1]*1e-6;
+pulse_amps = [-10*1e-6];
+dc_amps = [-1.4, 0, 1.4]*1e-6;
 %dc_amps = [-0.6, 0]*1e-6;
 %dc_amps = [];
 stim_amps = [pulse_amps, dc_amps];
 
 %% Plot Firing Rates
-ex_c = 0;
-ex_trial = 1;
-ex_stim_j = 2;
-plot_name = "subplot"; % 'single_stim' or 'subplot' or 'p1_only'
+ex_c = 12.8/100;
+ex_trial = 27;
+ex_stim_j = 4;
+plot_name = "single_stim"; % 'single_stim' or 'subplot' or 'p1_only'
 plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
                   t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, plot_name);
 
@@ -103,8 +103,9 @@ plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, .
                      start_trial, end_trial, num_trials, plot_name);
 
 %% Plot Decisions and Decision Times
-plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, num_batch, ...
-               pulse_coherences, galvanic_coherences, control_coherences, num_trials);
+plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
+                num_batch, num_trials, pulse_coherences, ...
+                galvanic_coherences, control_coherences, anodic_coherences);
            
 %% Plot Pulsatile Blocking Validation
 plot_name = "spont"; %"amp" or "spont"

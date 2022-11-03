@@ -97,7 +97,7 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     y = [norm_galvanic'; norm_anodic'; norm_pulse'];
     plot(x, y, 'ko')
     hold off
-    xticks([1, 2])
+    xticks([1, 2, 3])
     xticklabels(["Galvanic", "Anodic", "Pulsatile"])
     ylabel("Change in Firing Rate (spk/s)")
     title("Full P1")
@@ -122,7 +122,7 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     y = [norm_galvanic'; norm_anodic'; norm_pulse'];
     plot(x, y, 'ko')
     hold off
-    xticks([1, 2])
+    xticks([1, 2, 3])
     xticklabels(["Galvanic", "Anodic", "Pulsatile"])
     ylabel("Change in Firing Rate (spk/s)")
     title("P1 Affected")
@@ -147,8 +147,8 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     y = [norm_galvanic'; norm_anodic'; norm_pulse'];
     plot(x, y, 'ko')
     hold off
-    xticks([1, 2])
-    xticklabels(["Galvanic", "Pulsatile"])
+    xticks([1, 2, 3])
+    xticklabels(["Galvanic", "Anodic", "Pulsatile"])
     ylabel("Change in Firing Rate (spk/s)")
     title("P1 Unaffected")
 end

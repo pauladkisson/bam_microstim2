@@ -1,6 +1,6 @@
 %% Simulation Parameters
 clear;
-sim_name = "Brainless_m=0_Con";
+sim_name = "Brainless_m=0_Discon";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
@@ -93,14 +93,14 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
 %% Plot Firing Rate Distribution over distance from electrode
 win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
 win_stop = t_task + 0.1 + stim_ind*dt;
-%ex_c = [-55, -55, 0]/100;
-ex_c = [0, 0, 0];
+%ex_c = [-55, -55, 0, 30]/100;
+ex_c = [0, 0, 0, 0];
 %  plot_name = 'ex_c' or 'p1_wins' or 'p1_loses'
 plot_name = "ex_c";
 plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...
-                     start_trial, end_trial, num_trials, plot_name);
+                     anodic_coherences, start_trial, end_trial, num_trials, plot_name);
 
 %% Plot Decisions and Decision Times
 plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...

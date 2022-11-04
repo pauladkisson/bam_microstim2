@@ -56,7 +56,7 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     pulse_w = logistic_acc(pulse_coeffs, c);
     galvanic_w = logistic_acc(galvanic_coeffs , c);
     control_w = logistic_acc(ctrl_coeffs , c);
-    anodic_w = logistic_acc(anodic_coeffs , c);
+    %anodic_w = logistic_acc(anodic_coeffs , c);
     
     figure;
     set(gca, 'fontsize', 18);
@@ -64,10 +64,10 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     scatter(control_coherences, ctrl_acc, 'k', 'filled')
     scatter(pulse_coherences, pulse_acc, [], default_colors(7, :).*ones(length(pulse_acc), 3), 'filled')
     scatter(galvanic_coherences, galvanic_acc, [], default_colors(5, :).*ones(length(galvanic_acc), 3), 'filled')
-    scatter(anodic_coherences, anodic_acc, [], default_colors(6, :).*ones(length(anodic_acc), 3), 'filled')
+    %scatter(anodic_coherences, anodic_acc, [], default_colors(6, :).*ones(length(anodic_acc), 3), 'filled')
     plot(c, control_w, "k")
     plot(c, galvanic_w, 'Color', default_colors(5, :))
-    plot(c, anodic_w, 'Color', default_colors(6, :))
+    %plot(c, anodic_w, 'Color', default_colors(6, :))
     plot(c, pulse_w, 'Color', default_colors(7, :))
     hold off
     xlabel("Coherence (%)")
@@ -132,7 +132,7 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     hold on
     scatter(pulse_coherences, pulse_nodec*100, [], default_colors(7, :).*ones(length(pulse_nodec), 3), 'filled')
     scatter(galvanic_coherences, galvanic_nodec*100, [], default_colors(5, :).*ones(length(galvanic_nodec), 3), 'filled')
-    scatter(anodic_coherences, anodic_nodec*100, [], default_colors(6, :).*ones(length(anodic_nodec), 3), 'filled')
+    %scatter(anodic_coherences, anodic_nodec*100, [], default_colors(6, :).*ones(length(anodic_nodec), 3), 'filled')
     scatter(control_coherences, ctrl_nodec*100, 'k', 'filled') 
     hold off
     xlabel("Coherence (%)")

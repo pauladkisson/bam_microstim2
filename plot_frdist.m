@@ -48,7 +48,7 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     pulse_frs = reshape(mean(stim_frs(1, :, :), 2, 'omitnan'), [num_group, 1]);
     galvanic_frs = reshape(mean(stim_frs(2, :, :), 2, 'omitnan'), [num_group, 1]);
     control_frs = reshape(mean(stim_frs(3, :, :), 2, 'omitnan'), [num_group, 1]);
-    anodic_frs = reshape(mean(stim_frs(4, :, :), 2, 'omitnan'), [num_group, 1]);
+    %anodic_frs = reshape(mean(stim_frs(4, :, :), 2, 'omitnan'), [num_group, 1]);
 
     figure;
     set(gca, 'fontsize', 18)
@@ -56,7 +56,10 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     scatter(ball_rs*1e6, pulse_frs, [], ones(num_group, 3).*default_colors(7, :), 'filled')
     scatter(ball_rs*1e6, galvanic_frs, [], ones(num_group, 3).*default_colors(5, :), 'filled')
     scatter(ball_rs*1e6, control_frs, [], "k", 'filled')
-    scatter(ball_rs*1e6, anodic_frs, [], ones(num_group, 3).*default_colors(6, :), 'filled')
+    %scatter(ball_rs*1e6, anodic_frs, [], ones(num_group, 3).*default_colors(6, :), 'filled')
+    ctrl_mean = mean(stim_frs(3, :, :), 'all');
+    ctrl_std = std(mean(stim_frs(3, :, :), 2), [], 'all');
+    yline(ctrl_mean+3*ctrl_std, 'k--')
     hold off
     xlabel("Distance from Electrode (um)")
     ylabel("Firing Rate (spk/s)")
@@ -67,9 +70,11 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     end
     %percent activated
     ctrl_mean = mean(stim_frs(3, :, :), 'all');
-    ctrl_std = std(stim_frs(3, :, :), [], 'all');
+    ctrl_std = std(mean(stim_frs(3, :, :), 2), [], 'all');
     ps_perc_acts = sum(stim_frs(1, :, :) > (ctrl_mean + 3*ctrl_std), 3) / num_affected;
     gs_perc_acts = sum(stim_frs(2, :, :) > (ctrl_mean + 3*ctrl_std), 3) / num_affected;
+    %ps_perc_acts = sum(pulse_frs > (ctrl_mean + 3*ctrl_std)) / num_affected;
+    %gs_perc_acts = sum(galvanic_frs > (ctrl_mean + 3*ctrl_std)) / num_affected;
     mean_ps_act = mean(ps_perc_acts);
     sem_ps_act = std(ps_perc_acts) / sqrt(num_trials);
     mean_gs_act = mean(gs_perc_acts);
@@ -77,6 +82,29 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     fprintf("PS affects %0.2f%% +/-%0.2f%% of P1 neurons \n", [mean_ps_act*100, sem_ps_act*100]);
     fprintf("GS affects %0.2f%% +/-%0.2f%% of P1 neurons \n", [mean_gs_act*100, sem_gs_act*100]);
     
+    %Errorbars in space
+    pulse_stds = reshape(std(stim_frs(1, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
+    galvanic_stds = reshape(std(stim_frs(2, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
+    control_stds = reshape(std(stim_frs(3, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
+    figure;
+    set(gca, 'fontsize', 18)
+    hold on
+    errorbar(ball_rs*1e6, pulse_frs, pulse_stds, 'Color', default_colors(7, :))
+    errorbar(ball_rs*1e6, galvanic_frs, galvanic_stds, 'Color', default_colors(5, :))
+    errorbar(ball_rs*1e6, control_frs, control_stds, "k")
+    %scatter(ball_rs*1e6, anodic_frs, [], ones(num_group, 3).*default_colors(6, :), 'filled')
+    ctrl_mean = mean(stim_frs(3, :, :), 'all');
+    ctrl_std = std(mean(stim_frs(3, :, :), 2), [], 'all');
+    yline(ctrl_mean+3*ctrl_std, 'k--')
+    hold off
+    xlabel("Distance from Electrode (um)")
+    ylabel("Firing Rate (spk/s)")
+    if contains(sim_name, "Discon")
+        title("Disconnected")
+    else
+        title("Connected")
+    end
+    %{
     %Full Population Aggregated Activity
     popmean_pulse = reshape(mean(stim_frs(1, :, :), 3, 'omitnan'), [num_trials, 1]);
     popmean_galvanic = reshape(mean(stim_frs(2, :, :), 3, 'omitnan'), [num_trials, 1]);
@@ -151,4 +179,5 @@ function plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_af
     xticklabels(["Galvanic", "Anodic", "Pulsatile"])
     ylabel("Change in Firing Rate (spk/s)")
     title("P1 Unaffected")
+    %}
 end

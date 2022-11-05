@@ -98,10 +98,12 @@ function plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
             [pop_frs, ~] = recspikes2popfrs(recspikes, t, N, dt, p, f, N_E);
             if pulse
                 plot(t, pop_frs(:, 1), 'Color', default_colors(7, :), 'Linewidth', 2)
+            elseif stim_amp < 0 %cathodic gs
+                plot(t, pop_frs(:, 1), 'Color', default_colors(5, :), 'Linewidth', 2)
             elseif stim_amp == 0
                 plot(t, pop_frs(:, 1), "k", 'Linewidth', 2)
-            else
-                plot(t, pop_frs(:, 1), 'Color', default_colors(5, :), 'Linewidth', 2)
+            else %anodic gs
+                plot(t, pop_frs(:, 1), 'Color', default_colors(6, :), 'Linewidth', 2)
             end
         end
         xlabel("Time (s)")

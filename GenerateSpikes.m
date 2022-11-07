@@ -2,13 +2,13 @@
 %%% 9.2.21
 %%% Purpose: Generate Poisson Spike Trains for various trials of a given
 %%% frequency.
-function GenerateSpikes(fr_bg, m, f0, max_fr_task, coherences, f, N_E, N_I, t_task, ...
-    t_taskoff, t, start_trial, end_trial, sim_path)
+function GenerateSpikes(fr_bg, m, f0, max_fr_task, coherences, f, p, N_E, N_I, ...
+        t_task, t_taskoff, t, start_trial, end_trial, sim_path)
     dt = t(2) - t(1);
     N = N_E + N_I;
     num_group = floor(f*N_E);
     g1_idx = 1:num_group;
-    g2_idx = num_group+1:num_group*2;
+    g2_idx = num_group+1:num_group*p;
     time_idx = t>=t_task & t<t_taskoff;
     for c = coherences
         fr_task1 = max_fr_task/2*(1 + c);

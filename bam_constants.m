@@ -53,6 +53,15 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
         w_plus = 0;
         w_minus = 0;
         w = 0;
+    elseif sim_type == "p1_int"
+        percent_size = 0.075;
+        f = 1;
+        p = 1; % Number of different types of stimuli
+        N_E = floor(1600 * percent_size);
+        N_I = floor(400 * percent_size);
+        w_plus = 0;
+        w_minus = 0;
+        w = 1;
     end
     N = N_E + N_I;
     num_selective = floor(p*f*N_E);
@@ -80,8 +89,8 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
     else
         t_task = 1;
         t_taskoff = 3;
-        GenerateSpikes(fr_bg, m, f0, max_fr_task, coherences, f, N_E, N_I, t_task, ...
-            t_taskoff, t, start_trial, end_trial, sim_path)
+        GenerateSpikes(fr_bg, m, f0, max_fr_task, coherences, f, p, N_E, N_I, ...
+            t_task, t_taskoff, t, start_trial, end_trial, sim_path);
     end
 
     %% LIF Parameters

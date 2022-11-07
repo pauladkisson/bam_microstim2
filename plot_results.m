@@ -1,24 +1,25 @@
 %% Simulation Parameters
 clear;
-sim_name = "Brainless_m=0_Discon";
+sim_name = "P1_Int";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
 default_colors = get(gca, "colororder");
 
 start_trial = 1;
-end_trial = 28;
+end_trial = 1;
 num_trials = end_trial - start_trial + 1;
 num_batch = 3;
 
-%control_coherences = 0;
-%galvanic_coherences = 0;
-%pulse_coherences = 0;
-control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
-pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+control_coherences = 0;
+galvanic_coherences = 0;
+pulse_coherences = 0;
+anodic_coherences = 0;
+%control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
+%pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
 %galvanic_coherences = [-100, -51.2, -30, -25.6, -20, -10, 0]/100;
-galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-anodic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
+%galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+%anodic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
 %pulse_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2, 100]/100;
 
 pulse_amps = [-10*1e-6];
@@ -96,7 +97,7 @@ win_stop = t_task + 2 + stim_ind*dt;
 %ex_c = [-55, -55, 0, 30]/100;
 ex_c = [0, 0, 0, 0];
 %  plot_name = 'ex_c' 'ex_c_zoom' or 'p1_wins' or 'p1_loses'
-plot_name = "ex_c_zoom";
+plot_name = "ex_c";
 plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...

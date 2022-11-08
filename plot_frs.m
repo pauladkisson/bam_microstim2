@@ -2,7 +2,7 @@
 %%% 2/14/2022
 %%% Plot example Population Firing Rates
 function plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
-                  t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, plot_name)
+                  t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, ylims, plot_name)
     dt = t(2) - t(1);
     if plot_name == "single_stim"
         pulse = ex_stim_j<=length(pulse_amps);
@@ -105,6 +105,9 @@ function plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
             else %anodic gs
                 plot(t, pop_frs(:, 1), 'Color', default_colors(6, :), 'Linewidth', 2)
             end
+        end
+        if ylims
+            ylim(ylims)
         end
         xlabel("Time (s)")
         ylabel("P1 Firing Rate (spk/s)")

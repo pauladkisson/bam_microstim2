@@ -1,13 +1,13 @@
 %% Simulation Parameters
 clear;
-sim_name = "P1_Rec";
+sim_name = "P1_Int";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
 default_colors = get(gca, "colororder");
 
 start_trial = 1;
-end_trial = 1;
+end_trial = 28;
 num_trials = end_trial - start_trial + 1;
 num_batch = 3;
 
@@ -33,8 +33,9 @@ ex_c = 0/100;
 ex_trial = 1;
 ex_stim_j = 1;
 plot_name = "p1_only"; % 'single_stim' or 'subplot' or 'p1_only'
+ylims = [];
 plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
-                  t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, plot_name);
+                  t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, ylims, plot_name);
 
 
 %% Plot Rasters
@@ -96,9 +97,10 @@ win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
 win_stop = t_task + 2 + stim_ind*dt;
 %ex_c = [-55, -55, 0, 30]/100;
 ex_c = [0, 0, 0, 0];
-%  plot_name = 'ex_c' 'ex_c_zoom' or 'p1_wins' or 'p1_loses'
-plot_name = "ex_c";
-plot_frdist(sim_name, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, ...
+%  plot_name = 'ex_c' or  'ex_c_zoom' or 'p1_wins' or 'p1_loses'
+plot_name = "ex_c_zoom";
+sim_names = ["P1_Rec", "Brainless_m=0_Discon"];
+plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...
                      anodic_coherences, start_trial, end_trial, num_trials, plot_name);

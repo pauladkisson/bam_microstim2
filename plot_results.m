@@ -1,6 +1,6 @@
 %% Simulation Parameters
 clear;
-sim_name = "P1_Int";
+sim_name = "P1_Rec";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');

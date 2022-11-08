@@ -62,6 +62,15 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
         w_plus = 0;
         w_minus = 0;
         w = 1;
+    elseif sim_type == "p1_rec"
+        percent_size = 0.075;
+        f = 1;
+        p = 1; % Number of different types of stimuli
+        N_E = floor(1600 * percent_size);
+        N_I = 0;
+        w_plus = 0.05;
+        w_minus = 0;
+        w = 0;
     end
     N = N_E + N_I;
     num_selective = floor(p*f*N_E);

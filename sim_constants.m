@@ -2,9 +2,9 @@
 %%% 10/27/22
 %%% Purpose: Define high-level simulation constants for each run
 
-sim_name = "P1_Int";
+sim_name = "P1_Rec";
 sim_path = sprintf("Simulation %s", sim_name);
-sim_type = "p1_int"; %"con" or "discon" or "ps_val" or "gs_val" or "p1_int"
+sim_type = "p1_rec"; %"con" or "discon" or "ps_val" or "gs_val" or "p1_int" or "p1_rec"
 start_trial = 1;
 end_trial = 1;
 pulse_coherences = [0] / 100;

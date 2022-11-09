@@ -1,6 +1,6 @@
 %% Simulation Parameters
 clear;
-sim_name = "Test_psval";
+sim_name = "Test_gsval";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
@@ -118,5 +118,5 @@ plot_psval(sim_path, plot_name, pulse_amps, ex_amp, ex_spont)
 
 %% Plot Galvanic Blocking Validation
 save_amp = -1e-6;
-plot_name = "internal"; %"internal" or "external" (current amplitude for plotting)
+plot_name = "external"; %"internal" or "external" (current amplitude for plotting)
 plot_gsval(sim_path, save_amp, plot_name)

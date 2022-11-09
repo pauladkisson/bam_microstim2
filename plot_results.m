@@ -1,6 +1,6 @@
 %% Simulation Parameters
 clear;
-sim_name = "Test_gsval";
+sim_name = "Test_psval";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
@@ -111,7 +111,7 @@ plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
                 galvanic_coherences, control_coherences, anodic_coherences);
            
 %% Plot Pulsatile Blocking Validation
-plot_name = "spont"; %"amp" or "spont"
+plot_name = "amp"; %"amp" or "spont"
 ex_amp = -100e-6;
 ex_spont = 1800;
 plot_psval(sim_path, plot_name, pulse_amps, ex_amp, ex_spont)

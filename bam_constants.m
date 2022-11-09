@@ -132,7 +132,7 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
     thresh_cor = 0.211; %Threshold correction factor for pulses
     plot_ustim = false;
     if sim_type=="ps_val"
-        true_freqs = 0:3:floor((N/num_amps-1)*3); %Hz
+        true_freqs = 0:4:floor((N/num_amps-1)*4); %Hz
         num_freqs = length(true_freqs);
         stim_freqs = zeros(N, 1);
         for j = 1:num_freqs

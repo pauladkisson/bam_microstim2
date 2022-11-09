@@ -31,7 +31,9 @@ function plot_psval(sim_path, plot_name, pulse_amp, ex_amp, ex_spont)
             plot(true_freqs, true_freqs/i, 'k--')
         end
         legend(compose("%0.1fuA", true_amps*1e6))
-        ylim([-20, 300])
+        xlim([0, 350])
+        ylim([-20, 240])
+        yticks(-20:20:240)
         hold off
         ylabel("Neuron Average Firing Rate (Hz)")
         xlabel("Pulse Stimulation Frequency (Hz)")

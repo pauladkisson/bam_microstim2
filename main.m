@@ -36,8 +36,8 @@ for j = 1:length(stim_amps)
         input_coherentpath = sprintf("Simulation %s/spikes/c=%0.3f", sim_name, c);
         output_coherentpath = strcat(output_stimpath, sprintf("/c=%0.3f", c));
         mkdir(output_coherentpath)
-        %parfor trial = start_trial:end_trial
-        for trial = start_trial:end_trial
+        parfor trial = start_trial:end_trial
+        %for trial = start_trial:end_trial
             fprintf("trial: %0.0f \n", trial)
             input_trialpath = strcat(input_coherentpath, sprintf("/trial%0.0f.mat", trial));
             output_trialpath = strcat(output_coherentpath, sprintf("/trial%0.0f.mat", trial));

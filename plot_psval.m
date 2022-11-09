@@ -66,5 +66,6 @@ function plot_psval(sim_path, plot_name, pulse_amp, ex_amp, ex_spont)
         xlabel("Pulse Stimulation Frequency (Hz)")
         cb = colorbar('TickLabels', [lin_sponts(1), lin_sponts(end)], 'Direction', 'reverse');
         ylim([-100, 250])
+        xlim([0, 350])
     end
 end

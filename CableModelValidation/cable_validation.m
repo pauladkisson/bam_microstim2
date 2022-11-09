@@ -100,6 +100,7 @@ plot(t, (V_step-EL), 'r--', 'LineWidth', 4)
 xlabel("Time (ms)")
 ylabel(["Membrane Polarization", "Relative to V_{rest} (mV)"])
 legend(["Cable Equation", "LIF-step"])
+xlim([0, 3])
 
 lif_error = Vrattay - (V_step-EL);
 lif_perc_error = lif_error / Vrattay;
@@ -109,6 +110,7 @@ hold on
 plot(t, lif_error, 'k-', 'Linewidth', 4)
 xlabel("Time (ms)")
 ylabel("Error (mV)")
+xlim([0, 3])
 
 %% CableEq: Depolarization vs Threshold at 5uA, 10uA, and 20uA
 load("rattay_constants.mat");
@@ -187,7 +189,7 @@ figure;
 set(gca, 'Fontsize', 20)
 hold on
 lin_I_els = 0:-0.01:I_els(end);
-cmap = turbo(length(lin_I_els));
+cmap = flipud(parula(length(lin_I_els)));
 for j = 1:length(I_els)
     I_el = I_els(j);
     I_color = cmap(lin_I_els==I_el, :);

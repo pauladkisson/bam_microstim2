@@ -30,22 +30,25 @@ toc
 nplot = 0:1:10;
 xidx = 1:length(n);
 xidx = xidx(any(n == nplot, 2));
-cmap = turbo(length(nplot));
-lin_cmap = turbo(1000);
+lin_x = 0:0.001:1;
+cmap = copper(length(lin_x));
 fig = figure();
 set(gca, 'Fontsize', 20)
-colormap(lin_cmap);
+colormap(cmap);
 hold on
 for i = 1:length(nplot)
     idx = xidx(i);
     yplot = reshape(y(:, idx, 1), length(t), 1) - V_rest;
-    plot(t, yplot, 'Color', cmap(i, :), 'Linewidth', 4)
+    c_idx = abs(lin_x-x(idx))<(0.001/2);
+    plot(t, yplot, 'Color', cmap(c_idx, :), 'Linewidth', 4)
 end
+xlim([0, 3])
 hold off
 xlabel("Time (ms)")
 ylabel(["Membrane Polarization", "Relative to V_{rest} (mV)"])
 title(["-10uA External Current Step Response", "(1mm away)"])
-colorbar('Direction', 'reverse');
+colorbar('Direction', 'reverse', 'Ticks', [lin_x(1), lin_x(end)]);
+
 
 %% Hard-coded Voltage Step in LIF
 C = C_m;

@@ -19,7 +19,7 @@ function plot_gsval(sim_path, galvanic_amp, plot_name)
                 spikes(spike_idx, nn) = 1;
             end
         end
-        baseline_frs = sum(spikes(:, true_amps==0)) ./ t_span;
+        baseline_frs = mean(sum(spikes(:, gs_stim_amps==0)) ./ t_span);
         neuron_frs = sum(spikes, 1) ./ t_span;
         delta_frs = neuron_frs - baseline_frs;
         avg_delta_frs = zeros(num_amps, 1);
@@ -32,11 +32,11 @@ function plot_gsval(sim_path, galvanic_amp, plot_name)
                 true_I_ints(i) = I_int(start_idx);
             end
         end
-        spont_color = lin_cmap(abs(lin_sponts-neuron_frs(1))<(delta_spont/2), :);
+        spont_color = lin_cmap(abs(lin_sponts-baseline_frs)<(delta_spont/2), :);
         if plot_name == "external"
-            plot(abs(true_amps*1e6), avg_delta_frs, 'Color', spont_color)
+            plot(true_amps*(-1e6), avg_delta_frs, 'Color', spont_color)
         else
-            plot(true_I_ints*1e12, avg_delta_frs, 'Color', spont_color)
+            plot(true_I_ints*(-1e12), avg_delta_frs, 'Color', spont_color)
         end
     end
     hold off

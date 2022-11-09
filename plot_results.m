@@ -1,6 +1,6 @@
 %% Simulation Parameters
 clear;
-sim_name = "Test_psval";
+sim_name = "Test_gsval";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
@@ -22,10 +22,10 @@ anodic_coherences = 0;
 %anodic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
 %pulse_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2, 100]/100;
 
-pulse_amps = [-10*1e-6];
+%pulse_amps = [-10*1e-6];
 %dc_amps = [-1.4, 0, 1.4]*1e-6;
 %dc_amps = [-0.6, 0]*1e-6;
-%dc_amps = [];
+dc_amps = [-1]*1e-6;
 stim_amps = [pulse_amps, dc_amps];
 
 %% Plot Firing Rates

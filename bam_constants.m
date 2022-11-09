@@ -43,7 +43,7 @@ function bam_constants(sim_path, sim_type, start_trial, end_trial, pulse_coheren
         w_minus = 0;
         w = 0;
     elseif sim_type=="gs_val"
-        true_amps = (0:5:600).*(-1e-6);
+        true_amps = (-200:5:600).*(-1e-6);
         num_amps = length(true_amps);
         num_reps = 5;
         N_E = num_amps*num_reps;

@@ -3,7 +3,7 @@ function plot_psval(sim_path, plot_name, pulse_amp, ex_amp, ex_spont)
     if plot_name == "amp"
         trial = find(fr_bgs==ex_spont); 
         load(strcat(sim_path, sprintf("/data/%0.2fuA_pulse/c=0.000/trial%0.0f.mat", [pulse_amp*1e6, trial])));
-        lin_amps = true_amps(1)*1e6:0.01:floor(true_amps(end)*1e6);
+        lin_amps = true_amps(1)*1e6:-0.01:floor(true_amps(end)*1e6);
         spikes = zeros(length(t), N);
         for nn = 1:N
             for spike_idx = recspikes(int2str(nn))
@@ -17,14 +17,15 @@ function plot_psval(sim_path, plot_name, pulse_amp, ex_amp, ex_spont)
         set(gca, 'fontsize', 18)
         hold on
         for i = 1:num_amps
+            true_amp = true_amps(i);
             if i == 1
                 start_idx = 1;
             else
                 start_idx = floor(N/num_amps*(i-1)) + 1;
             end
             end_idx = floor(N/num_amps*i);
-            plot(true_freqs, neuron_frs(start_idx:end_idx), ...
-            'Linewidth', 2)
+            plot(true_freqs, neuron_frs(start_idx:end_idx), 'Color', ...
+                 cmap(abs(lin_amps-true_amp*1e6)<0.005, :), 'Linewidth', 2)
         end
         for i = 1:5
             plot(true_freqs, true_freqs/i, 'k--')
@@ -35,13 +36,13 @@ function plot_psval(sim_path, plot_name, pulse_amp, ex_amp, ex_spont)
         ylabel("Neuron Average Firing Rate (Hz)")
         xlabel("Pulse Stimulation Frequency (Hz)")
     elseif plot_name == "spont"
-        cmap = turbo(end_trial);
-        lin_cmap = turbo(1000);
+        delta_spont = 0.1;
+        lin_sponts = 0:0.1:100;
+        lin_cmap = turbo(length(lin_sponts));
         figure;
         colormap(lin_cmap)
         set(gca, 'fontsize', 18)
         hold on
-        spont_fr_lims = [0, 0];
         for trial = start_trial:end_trial
             load(strcat(sim_path, sprintf("/data/%0.2fuA_pulse/c=0.000/trial%0.0f.mat", [pulse_amp*1e6, trial])))
             spikes = zeros(length(t), N);
@@ -53,12 +54,7 @@ function plot_psval(sim_path, plot_name, pulse_amp, ex_amp, ex_spont)
             baseline_frs = sum(spikes(:, ps_stim_amps==0)) ./ t_span;
             neuron_frs = sum(spikes(:, abs(ps_stim_amps-ex_amp)<eps), 1) ./ t_span;
             delta_frs = neuron_frs - baseline_frs;
-            plot(true_freqs, delta_frs, 'Color', cmap(trial, :))
-            if trial == start_trial
-                spont_fr_lims(1) = neuron_frs(1);
-            elseif trial == end_trial
-                spont_fr_lims(2) = neuron_frs(1);
-            end
+            plot(true_freqs, delta_frs, 'Color', lin_cmap(abs(lin_sponts-neuron_frs(1))<delta_spont/2, :))
         end
         for i = 1:5
             plot(true_freqs, true_freqs/i, 'k--')
@@ -66,6 +62,7 @@ function plot_psval(sim_path, plot_name, pulse_amp, ex_amp, ex_spont)
         hold off
         ylabel("Change in Neuron Average Firing Rate (Hz)")
         xlabel("Pulse Stimulation Frequency (Hz)")
-        cb = colorbar('TickLabels', [spont_fr_lims(1), spont_fr_lims(end)], 'Direction', 'reverse');
+        cb = colorbar('TickLabels', [lin_sponts(1), lin_sponts(end)], 'Direction', 'reverse');
+        ylim([-100, 250])
     end
 end

@@ -162,46 +162,23 @@ end
 figure;
 set(gca, 'Fontsize', 20)
 hold on
-lin_I_els = 0:-0.01:I_els(end);
-cmap = flipud(parula(length(lin_I_els)));
 plot(abs(I_els), thresholds*10^4, 'ko-', 'Linewidth', 4)
-plot(abs(I_els), lif_thresholds*10^4, 'r--', 'Linewidth', 4)
+plot(abs(I_els), lif_thresholds*10^4, 'ro--', 'Linewidth', 4)
 xlabel("Pulse Amplitude (uA)")
 ylabel("Distance Threshold (um)")
 legend(["Cable Eq", "LIF"])
 title(sprintf("Optimal Threshold Correction = %0.03f", thresh_cor_star))
 
-%{
 figure;
 set(gca, 'Fontsize', 20)
 hold on
-for j = 1:length(I_els)
-    I_el = I_els(j);
-    I_color = cmap(lin_I_els==I_el, :);
-    err = depol_thresholds(j, :) - lif_depol_thresholds(j, :);
-    plot(depols, err*1e4, 'o-', 'Linewidth', 4, 'Color', I_color)
-end
-colormap(cmap)
-c = colorbar('Ticks', [0, I_els./I_els(end)], 'TickLabels', [0, compose("%0.0f", abs(I_els))]);
-c.Label.String = 'Pulse Amplitude (uA)';
-xlabel("Depolarization (mV)")
+err = thresholds - lif_thresholds;
+rel_err = err ./ thresholds;
+plot(I_els, err*1e4, 'ko-', 'Linewidth', 4)
+xlabel("Pulse Amplitude (uA)")
 ylabel("Absolute Error (um)")
-title(sprintf("Optimal Threshold Correction = %0.03f", thresh_cor_star))
-
-figure;
-set(gca, 'Fontsize', 20)
-hold on
-for j = 1:length(I_els)
-    I_el = I_els(j);
-    I_color = cmap(lin_I_els==I_el, :);
-    err = depol_thresholds(j, :) - lif_depol_thresholds(j, :);
-    rel_err = err ./ depol_thresholds(j, :);
-    plot(depols, rel_err*100, 'o-', 'Linewidth', 4, 'Color', I_color)
-end
-colormap(cmap)
-c = colorbar('Ticks', [0, I_els./I_els(end)], 'TickLabels', [0, compose("%0.0f", abs(I_els))]);
-c.Label.String = 'Pulse Amplitude (uA)';
-xlabel("Depolarization (mV)")
+yyaxis right
+plot(I_els, rel_err*100, 'ro-', 'Linewidth', 4)
 ylabel("Relative Error (%)")
 title(sprintf("Optimal Threshold Correction = %0.03f", thresh_cor_star))
 %}

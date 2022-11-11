@@ -19,13 +19,11 @@ V0 = V_rest;
 y_ss = [V0, n_inf(V0), m_inf(V0), h_inf(V0)];
 y0 = zeros(N, 4);
 y0 = y0 + y_ss;
-I_int = 0 * ones(N, 1) * 1e-6; %uA --> pA
+I_int = 0; %uA --> pA
 
 %% Run Initial Test
-tic;
 [t, y, V_e] = rattayrun(y0, I_el, I_int, tstart_int, tend_int, ...
                            tstart_ext, tflip_ext, tend_ext, tmax, tstep, true);
-toc
 %% Plot Vm%%
 nplot = 0:1:10;
 xidx = 1:length(n);
@@ -84,7 +82,7 @@ for i = 1:length(t)-1
     if t(i)<tstart_int
         lif_I_int = 0;
     else
-        lif_I_int = I_int(n==0);
+        lif_I_int = I_int;
     end
     dvdt = 1/C*( -gL*(V_step(i)-EL) + I_inj + lif_I_int);
     V_step(i+1) = V_step(i) + dvdt*dt;
@@ -111,6 +109,102 @@ plot(t, lif_error, 'k-', 'Linewidth', 4)
 xlabel("Time (ms)")
 ylabel("Error (mV)")
 xlim([0, 3])
+%% CableEq: Amplitude vs Threshold 5uA-20uA
+load("rattay_constants.mat");
+show_prog = false;
+z_bounds = [10, 20].*10^(-4);
+z_res = 0.1*10^(-4);
+I_els = -5:-1:-20; %uA
+thresholds = zeros(length(I_els), 1);
+for j = 1:length(I_els)
+    I_el = I_els(j);
+    fprintf("External Current=%0.0fuA \n", I_el);
+    z_rat = @(z) z_rattay(z, I_el, 0, show_prog);
+    try
+        %new threshold is greater than previous to avoid numerical instability
+        z_bounds(1) = thresholds(j-1);
+    catch
+        assert(j==1, "some other error has occured")
+    end
+    z_bounds(2) = z_bounds(1)*2; %new threshold is no more than double the previous one
+    z_thresh = bisect_search(z_rat, @rattay_eval, z_bounds, z_res);
+    fprintf("Threshold Distance = %0.1fum \n", z_thresh*1e4)
+    thresholds(j) = z_thresh;
+end
+save("threshold_correction.mat", 'thresholds', 'I_els')
+
+%% Optimize threshold correction factor
+load("threshold_correction.mat")
+bounds = [0, 1]; %thresh correction bounds
+options = optimset('Display','iter');
+eval_fn = @(thresh_cor) eval_thresh_cor(I_els, thresholds, thresh_cor, depols);
+thresh_cor_star = fminbnd(eval_fn, bounds(1), bounds(2), options);
+save("threshold_correction.mat", 'thresholds', 'I_els', 'thresh_cor_star');
+
+%% LIF Approximation: Threshold vs Amplitude 5-20uA
+load("threshold_correction.mat");
+C = 0.5*1e-9; %nF
+gL = 25*1e-9; %nS
+EL = -70e-3; %mV
+z_bounds = [0, 400]*1e-4;
+z_res = 1e-4;
+lif_thresholds = zeros(length(I_els), 1);
+for j = 1:length(I_els)
+    I_el = I_els(j);
+    fprintf("External Current Amplitude = %0.0fuA \n", I_el)
+    mirror_est = @(z) mir_est(z, I_el, thresh_cor_star, 0);
+    z_thresh = bisect_search(mirror_est, @lif_eval, z_bounds, z_res);
+    fprintf("Threshold Distance = %0.1fum \n", z_thresh*1e4)
+    lif_thresholds(j) = z_thresh;
+end
+
+%% Plot Goodness of Fit
+figure;
+set(gca, 'Fontsize', 20)
+hold on
+lin_I_els = 0:-0.01:I_els(end);
+cmap = flipud(parula(length(lin_I_els)));
+plot(abs(I_els), thresholds*10^4, 'ko-', 'Linewidth', 4)
+plot(abs(I_els), lif_thresholds*10^4, 'r--', 'Linewidth', 4)
+xlabel("Pulse Amplitude (uA)")
+ylabel("Distance Threshold (um)")
+legend(["Cable Eq", "LIF"])
+title(sprintf("Optimal Threshold Correction = %0.03f", thresh_cor_star))
+
+%{
+figure;
+set(gca, 'Fontsize', 20)
+hold on
+for j = 1:length(I_els)
+    I_el = I_els(j);
+    I_color = cmap(lin_I_els==I_el, :);
+    err = depol_thresholds(j, :) - lif_depol_thresholds(j, :);
+    plot(depols, err*1e4, 'o-', 'Linewidth', 4, 'Color', I_color)
+end
+colormap(cmap)
+c = colorbar('Ticks', [0, I_els./I_els(end)], 'TickLabels', [0, compose("%0.0f", abs(I_els))]);
+c.Label.String = 'Pulse Amplitude (uA)';
+xlabel("Depolarization (mV)")
+ylabel("Absolute Error (um)")
+title(sprintf("Optimal Threshold Correction = %0.03f", thresh_cor_star))
+
+figure;
+set(gca, 'Fontsize', 20)
+hold on
+for j = 1:length(I_els)
+    I_el = I_els(j);
+    I_color = cmap(lin_I_els==I_el, :);
+    err = depol_thresholds(j, :) - lif_depol_thresholds(j, :);
+    rel_err = err ./ depol_thresholds(j, :);
+    plot(depols, rel_err*100, 'o-', 'Linewidth', 4, 'Color', I_color)
+end
+colormap(cmap)
+c = colorbar('Ticks', [0, I_els./I_els(end)], 'TickLabels', [0, compose("%0.0f", abs(I_els))]);
+c.Label.String = 'Pulse Amplitude (uA)';
+xlabel("Depolarization (mV)")
+ylabel("Relative Error (%)")
+title(sprintf("Optimal Threshold Correction = %0.03f", thresh_cor_star))
+%}
 
 %% CableEq: Depolarization vs Threshold at 5uA, 10uA, and 20uA
 load("rattay_constants.mat");
@@ -156,10 +250,9 @@ save("threshold_correction.mat", 'depol_thresholds', 'depols', 'I_ints', 'I_els'
 load("threshold_correction.mat") 
 bounds = [0, 1]; %thresh correction bounds
 options = optimset('Display','iter');
-eval_fn = @(thresh_cor) eval_thresh_cor(I_els, depol_thresholds(:,  :), thresh_cor, depols);
+eval_fn = @(thresh_cor) eval_thresh_cor(I_els, thresholds, thresh_cor, depols);
 thresh_cor_star = fminbnd(eval_fn, bounds(1), bounds(2), options);
-save("threshold_correction.mat", 'depol_thresholds', 'depols', 'I_ints', ...
-    'I_els', 'thresh_cor_star');
+save("threshold_correction.mat", 'thresholds', 'I_els', 'thresh_cor_star');
 
 %% LIF Approximation: Depolarization vs Threshold at 5uA, 10uA, and 20uA
 load("threshold_correction.mat");

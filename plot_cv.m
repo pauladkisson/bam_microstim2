@@ -1,10 +1,10 @@
 %%% Paul Adkisson
 %%% 2/14/2022
 %%% Plot Coefficient of Variation (CV)
-function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_group, ...
+function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, t_cut, N, top_N, num_group, ...
                  num_affected, win_size, cv_window, default_colors, ex_c, ex_trial, ...
                  ex_neuron, pulse_coherences, galvanic_coherences, control_coherences, ...
-                 start_trial, end_trial, num_trials, plot_name)
+                 anodic_coherences, start_trial, end_trial, num_trials, plot_name)
     if plot_name == "ex_neuron" || plot_name == "ex_trial"
         figure;
         set(gca, 'Fontsize', 18);
@@ -19,10 +19,12 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_gr
             else
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                     [sim_name, stim_amp*1e6]);
-                if stim_amp == 0
-                    stim_color = [0, 0, 0];
-                else
+                if stim_amp < 0 %cathodic GS
                     stim_color = default_colors(5, :);
+                elseif stim_amp == 0 %Control
+                    stim_color = [0, 0, 0];
+                else %Anodic GS
+                    stim_color = default_colors(6, :);
                 end
             end
             load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, ex_trial])), ...
@@ -68,7 +70,7 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_gr
         hold off
         ylabel("P1 CV")
         xlabel("Time (s)")
-        legend(["Pulsatile", "Galvanic", "Control"])
+        legend(["Pulsatile", "Galvanic", "Control", "Anodic"])
     
     elseif plot_name == "p1_wins"
         figure(1);
@@ -87,19 +89,23 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_gr
                 else
                     output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                         [sim_name, stim_amp*1e6]);
-                    if stim_amp == 0
-                        stim_coherences = control_coherences;
-                    else
+                    if stim_amp < 0 %cathodic GS
                         stim_coherences = galvanic_coherences;
+                    elseif stim_amp == 0
+                        stim_coherences = control_coherences;
+                    else %anodic GS
+                        stim_coherences = anodic_coherences;
                     end
                 end
-                load(strcat(output_stimpath, "/decisions.mat"), "decisions")
+                load(strcat(output_stimpath, "/decisions.mat"), "decisions", "decision_times")
                 if contains(sim_name, "Discon")
                     stim_coherences = 0;
                 end
                 for trial = start_trial:end_trial
                     relative_trial = trial - start_trial + 1;
-                    if ~contains(sim_name, "Discon") && decisions(relative_trial, stim_coherences==0) ~= 1
+                    if ~contains(sim_name, "Discon") && (...
+                            decisions(relative_trial, stim_coherences==c) ~= 1 || ...
+                            decision_times(relative_trial, stim_coherences==c) > t_cut )
                         stim_cv(j, relative_trial, :) = NaN;
                         continue %skip trials where P1 doesn't win
                     end
@@ -131,9 +137,19 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_gr
             pulse_cv = reshape(stim_cv(1, :, :), [num_trials, num_group]);
             galvanic_cv = reshape(stim_cv(2, :, :), [num_trials, num_group]);
             control_cv = reshape(stim_cv(3, :, :), [num_trials, num_group]);
+            anodic_cv = reshape(stim_cv(4, :, :), [num_trials, num_group]);
             pulse_trialmean = mean(pulse_cv, 1, 'omitnan');
             galvanic_trialmean = mean(galvanic_cv, 1, 'omitnan');
             control_trialmean = mean(control_cv, 1, 'omitnan');
+            anodic_trialmean = mean(anodic_cv, 1, 'omitnan');
+            pulse_wins = all(~isnan(pulse_cv), 2);
+            galvanic_wins = all(~isnan(galvanic_cv), 2);
+            control_wins = all(~isnan(control_cv), 2);
+            anodic_wins = all(~isnan(anodic_cv), 2);
+            pulse_sem = std(pulse_cv, [], 1, 'omitnan') / sqrt(length(pulse_wins));
+            galvanic_sem = std(galvanic_cv, [], 1, 'omitnan') / sqrt(length(galvanic_wins));
+            control_sem =  std(control_cv, [], 1, 'omitnan') / sqrt(length(control_wins));
+            anodic_sem = std(anodic_cv, [], 1, 'omitnan') / sqrt(length(anodic_wins));
 
             if contains(sim_name, "Discon")
                 plot_shape = 'o';
@@ -142,12 +158,14 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, N, top_N, num_gr
             end
             figure(1);
             hold on
-            scatter(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), ...
-                [], default_colors(5, :), 'filled', plot_shape)
-            scatter(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), ...
-                [], "k", 'filled', plot_shape)
-            scatter(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), ...
-                [], default_colors(7, :), 'filled', plot_shape)
+            errorbar(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), galvanic_sem(1:top_N), ...
+                plot_shape, 'MarkerFaceColor', default_colors(5, :))
+            errorbar(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), control_sem(1:top_N), ...
+                plot_shape, 'MarkerFaceColor', [0, 0, 0])
+            errorbar(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), pulse_sem(1:top_N), ...
+                plot_shape, 'MarkerFaceColor', default_colors(7, :))
+            errorbar(ball_rs(1:top_N)*1e6, anodic_trialmean(1:top_N), anodic_sem(1:top_N), ...
+                plot_shape, 'MarkerFaceColor', default_colors(6, :))
             hold off
             xlabel("Distance from Electrode (um)")
             ylabel("Coefficient of Variation (unitless)")

@@ -159,13 +159,13 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, t_cut, N, top_N,
             figure(1);
             hold on
             errorbar(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), galvanic_sem(1:top_N), ...
-                plot_shape, 'MarkerFaceColor', default_colors(5, :))
+                plot_shape, 'Color', default_colors(5, :), 'MarkerFaceColor', default_colors(5, :))
             errorbar(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), control_sem(1:top_N), ...
-                plot_shape, 'MarkerFaceColor', [0, 0, 0])
+                plot_shape, 'Color', [0, 0, 0], 'MarkerFaceColor', [0, 0, 0])
             errorbar(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), pulse_sem(1:top_N), ...
-                plot_shape, 'MarkerFaceColor', default_colors(7, :))
+                plot_shape, 'Color', default_colors(7, :), 'MarkerFaceColor', default_colors(7, :))
             errorbar(ball_rs(1:top_N)*1e6, anodic_trialmean(1:top_N), anodic_sem(1:top_N), ...
-                plot_shape, 'MarkerFaceColor', default_colors(6, :))
+                plot_shape, 'Color', default_colors(6, :), 'MarkerFaceColor', default_colors(6, :))
             hold off
             xlabel("Distance from Electrode (um)")
             ylabel("Coefficient of Variation (unitless)")

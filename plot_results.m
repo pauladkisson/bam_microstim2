@@ -77,7 +77,7 @@ t_cut = 1; %omit trials with DTs longer than t_cut
 plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, t_cut, stim_freq, ...
                         num_group, num_affected, top_N, win_start, win_stop, idx_diff, ...
                         default_colors, start_trial, end_trial, num_trials, ex_c, ...
-                        pulse_coherences, galvanic_coherences, control_coherences);
+                        pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences);
 
 %% Plot Synchrony
 N_start = 1;
@@ -85,13 +85,14 @@ N_end = floor(num_group);
 win_start = 2.5;
 win_stop = 3;
 c_win = 300*1e-6;
-ex_c = [-55, -55, 0]/100;
+ex_c = [-55, -55, 0, 35]/100;
 sim_names = ["Brainless_m=0_Con", "Brainless_m=0_Discon"]; % [Connected, Disconnected]
 symmetric = true;
-plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
+t_cut = 1; %omit trials with DTs longer than t_cut
+plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, N_start, ...
                         N_end, win_start, win_stop, c_win, ex_c, ...
                         pulse_coherences, galvanic_coherences, control_coherences, ...
-                        start_trial, end_trial, num_trials, symmetric);
+                        anodic_coherences, start_trial, end_trial, num_trials, symmetric);
 
 %% Plot Firing Rate Distribution over distance from electrode
 win_start = t_taskoff - 0.5; %+ stim_ind*dt; % to account for onset spike of pulse
@@ -99,7 +100,7 @@ win_stop = t_taskoff; %+ 2 + stim_ind*dt;
 ex_c = [-55, -55, 0, 35]/100;
 %ex_c = [0, 0, 0, 0];
 %  plot_name = 'ex_c' or  'ex_c_zoom' or 'p1_wins' or 'p1_loses'
-plot_name = "p1_winss";
+plot_name = "p1_wins";
 sim_names = ["Brainless_m=0_Con", "Brainless_m=0_Discon"];
 plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...

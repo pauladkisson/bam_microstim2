@@ -4,7 +4,7 @@
 function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, t_cut, stim_freq, ...
                         num_group, num_affected, top_N, win_start, win_stop, idx_diff, ...
                         default_colors, start_trial, end_trial, num_trials, ex_c, ...
-                        pulse_coherences, galvanic_coherences, control_coherences)
+                        pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences)
     assert(win_start>=t_task & win_start<t_taskoff, "Start of plotting window must be during task")
     assert(win_stop>t_task & win_stop<=t_taskoff, "End of plotting window must be during task")
     pulsetimes = t_task:1/stim_freq:t_taskoff;
@@ -18,18 +18,20 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         for j = 1:length(stim_amps)
             c = ex_c(j);
             stim_amp = stim_amps(j);
-            pulse_trialmean = j<=length(pulse_amps);
-            if pulse_trialmean
+            pulse = j<=length(pulse_amps);
+            if pulse
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_pulse", ...
                     [sim_name, stim_amp*1e6]);
                 stim_coherences = pulse_coherences;
             else
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                     [sim_name, stim_amp*1e6]);
-                if stim_amp == 0
-                    stim_coherences = control_coherences;
-                else
+                if stim_amp < 0 %cathodic GS
                     stim_coherences = galvanic_coherences;
+                elseif stim_amp == 0
+                    stim_coherences = control_coherences;
+                else %anodic GS
+                    stim_coherences = anodic_coherences;
                 end
             end
             load(strcat(output_stimpath, "/decisions.mat"), "decisions", "decision_times")

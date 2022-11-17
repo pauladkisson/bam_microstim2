@@ -1,10 +1,10 @@
 %%% Paul Adkisson
 %%% 2/14/2022
 %%% Plot Synchrony
-function plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
+function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, N_start, ...
                         N_end, win_start, win_stop, c_win, ex_c, ...
                         pulse_coherences, galvanic_coherences, control_coherences, ...
-                        start_trial, end_trial, num_trials, symmetric)
+                        anodic_coherences, start_trial, end_trial, num_trials, symmetric)
     for sim_name = sim_names
         disp(sim_name)
         
@@ -15,27 +15,28 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
             pulse = j<=length(pulse_amps);
             if pulse
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_pulse", ...
-                    [sim_name stim_amp*1e6]);
+                    [sim_name, stim_amp*1e6]);
                 stim_coherences = pulse_coherences;
-                disp("Pulsatile")
             else
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                     [sim_name, stim_amp*1e6]);
-                if stim_amp == 0
-                    stim_coherences = control_coherences;
-                    disp("Control")
-                else
+                if stim_amp < 0 %cathodic GS
                     stim_coherences = galvanic_coherences;
-                    disp("Galvanic")
+                elseif stim_amp == 0
+                    stim_coherences = control_coherences;
+                else %anodic GS
+                    stim_coherences = anodic_coherences;
                 end
             end
-            load(strcat(output_stimpath, "/decisions.mat"), "decisions")
+            load(strcat(output_stimpath, "/decisions.mat"), "decisions", "decision_times")
             for trial = start_trial:end_trial
+                relative_trial = trial - start_trial + 1;
                 fprintf("Trial %0.0f \n", trial)
-                if sim_name==sim_names(1) && decisions(trial, stim_coherences==c) ~= 1
-                    disp("P1 lost")
+                if ~contains(sim_name, "Discon") && (...
+                            decisions(relative_trial, stim_coherences==c) ~= 1 || ...
+                            decision_times(relative_trial, stim_coherences==c) > t_cut )
                     stim_sync(j, trial, :, :) = NaN;
-                    continue %skip trials where P1 doesn't win
+                    continue %skip trials where P1 doesn't win or decision takes too long
                 end
                 load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
                     "recspikes")
@@ -50,6 +51,7 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
         pulse_sync = reshape(mean(stim_sync(1, :, :, :), 2, 'omitnan'), [num_group, num_group]);
         galvanic_sync = reshape(mean(stim_sync(2, :, :, :), 2, 'omitnan'), [num_group, num_group]);
         control_sync = reshape(mean(stim_sync(3, :, :, :), 2, 'omitnan'), [num_group, num_group]);
+        anodic_sync = reshape(mean(stim_sync(4, :, :, :), 2, 'omitnan'), [num_group, num_group]);
 
         nan_color = uint8([0, 0, 128]);
         ticks = log10([1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
@@ -88,6 +90,19 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, num_group, N_start, ...
         xlabel("neuron 2")
         ylabel("neuron 1")
         title("Control")
+        axs = struct(gca);
+        cb = axs.Colorbar;
+        cb.Ticks = ticks;
+        cb.TickLabels = tick_labels;
+        
+        figure;
+        h = heatmap(log10(anodic_sync*100), 'ColorLimits', [0, 2], 'MissingDataColor', nan_color);
+        colormap(hot)
+        h.XDisplayLabels = nan(size(h.XDisplayData));
+        h.YDisplayLabels = nan(size(h.YDisplayData));
+        xlabel("neuron 2")
+        ylabel("neuron 1")
+        title("Anodic")
         axs = struct(gca);
         cb = axs.Colorbar;
         cb.Ticks = ticks;

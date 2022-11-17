@@ -1,7 +1,7 @@
 %%% Paul Adkisson
 %%% 2/14/2022
 %%% Plot Phase Locking
-function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, stim_freq, ...
+function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, t_cut, stim_freq, ...
                         num_group, num_affected, top_N, win_start, win_stop, idx_diff, ...
                         default_colors, start_trial, end_trial, num_trials, ex_c, ...
                         pulse_coherences, galvanic_coherences, control_coherences)
@@ -32,12 +32,14 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
                     stim_coherences = galvanic_coherences;
                 end
             end
-            load(strcat(output_stimpath, "/decisions.mat"), "decisions")
+            load(strcat(output_stimpath, "/decisions.mat"), "decisions", "decision_times")
             for trial = start_trial:end_trial
                 relative_trial = trial - start_trial + 1;
-                if ~contains(sim_name, "Discon") && decisions(relative_trial, stim_coherences==0) ~= 1
+                if ~contains(sim_name, "Discon") && (...
+                        decisions(relative_trial, stim_coherences==0) ~= 1 || ...
+                        decision_times(relative_trial, stim_coherences==0) > t_cut)
                     stim_sync(j, relative_trial, :) = NaN;
-                    continue %skip trials where P1 doesn't win
+                    continue %skip trials where P1 doesn't win or decision takes too long
                 end
                 load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
                     "recspikes")
@@ -63,9 +65,20 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         pulse_sync = reshape(stim_sync(1, :, :), [num_trials, num_group]);
         galvanic_sync = reshape(stim_sync(2, :, :), [num_trials, num_group]);
         control_sync = reshape(stim_sync(3, :, :), [num_trials, num_group]);
+        anodic_sync = reshape(stim_sync(4, :, :), [num_trials, num_group]);
         pulse_trialmean = mean(pulse_sync, 1, 'omitnan');
         galvanic_trialmean = mean(galvanic_sync, 1, 'omitnan');
         control_trialmean = mean(control_sync, 1, 'omitnan');
+        anodic_trialmean = mean(anodic_sync, 1, 'omitnan');
+        pulse_wins = all(~isnan(pulse_sync), 2);
+        galvanic_wins = all(~isnan(galvanic_sync), 2);
+        control_wins = all(~isnan(control_sync), 2);
+        anodic_wins = all(~isnan(anodic_sync), 2);
+        pulse_sem = std(pulse_sync, [], 1, 'omitnan') / sqrt(length(pulse_wins));
+        galvanic_sem = std(galvanic_sync, [], 1, 'omitnan') / sqrt(length(galvanic_wins));
+        control_sem =  std(control_sync, [], 1, 'omitnan') / sqrt(length(control_wins));
+        anodic_sem = std(anodic_sync, [], 1, 'omitnan') / sqrt(length(anodic_wins));
+
         if contains(sim_name, "Discon")
             plot_shape = 'o';
         else
@@ -73,12 +86,14 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         end
         figure(1);
         hold on
-        scatter(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), ...
-            [], default_colors(5, :), 'filled', plot_shape)
-        scatter(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), ...
-            [], "k", 'filled', plot_shape)
-        scatter(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), ...
-            [], default_colors(7, :), 'filled', plot_shape)
+        errorbar(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), galvanic_sem(1:top_N), ...
+            plot_shape, 'Color', default_colors(5, :), 'MarkerFaceColor', default_colors(5, :))
+        errorbar(ball_rs(1:top_N)*1e6, control_trialmean(1:top_N), control_sem(1:top_N), ...
+            plot_shape, 'Color', [0, 0, 0], 'MarkerFaceColor', [0, 0, 0])
+        errorbar(ball_rs(1:top_N)*1e6, pulse_trialmean(1:top_N), pulse_sem(1:top_N), ...
+            plot_shape, 'Color', default_colors(7, :), 'MarkerFaceColor', default_colors(7, :))
+        errorbar(ball_rs(1:top_N)*1e6, anodic_trialmean(1:top_N), anodic_sem(1:top_N), ...
+            plot_shape, 'Color', default_colors(6, :), 'MarkerFaceColor', default_colors(6, :))
         hold off
         xlabel("Distance from Electrode (um)")
         ylabel("Percent of Phaselocked Spikes (%)")

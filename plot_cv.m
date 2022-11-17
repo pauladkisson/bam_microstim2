@@ -107,7 +107,7 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, t_cut, N, top_N,
                             decisions(relative_trial, stim_coherences==c) ~= 1 || ...
                             decision_times(relative_trial, stim_coherences==c) > t_cut )
                         stim_cv(j, relative_trial, :) = NaN;
-                        continue %skip trials where P1 doesn't win
+                        continue %skip trials where P1 doesn't win or decision takes too long
                     end
                     load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
                         "recspikes")

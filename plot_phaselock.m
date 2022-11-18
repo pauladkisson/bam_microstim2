@@ -99,5 +99,6 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         hold off
         xlabel("Distance from Electrode (um)")
         ylabel("Percent of Phaselocked Spikes (%)")
+        ylim([0, 100])
     end
 end

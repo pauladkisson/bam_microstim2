@@ -1,8 +1,8 @@
 %%% Paul Adkisson
 %%% 2/14/2022
 %%% Plot Synchrony
-function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, N_start, ...
-                        N_end, win_start, win_stop, c_win, ex_c, ...
+function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, ...
+                        N_start, N_end, win_start, win_stop, c_win, ex_c, ...
                         pulse_coherences, galvanic_coherences, control_coherences, ...
                         anodic_coherences, start_trial, end_trial, num_trials, symmetric)
     for sim_name = sim_names
@@ -57,7 +57,8 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, N_star
         ticks = log10([1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
         tick_labels = ["1", "10", "", "", "", "", "", "", "", "", "100"];
         figure;
-        h = heatmap(log10(pulse_sync*100), 'ColorLimits', [0, 2], 'MissingDataColor', nan_color);
+        h = heatmap(log10(pulse_sync(1:num_affected, 1:num_affected)*100), ...
+                    'ColorLimits', [0, 2], 'MissingDataColor', nan_color);
         colormap(hot)
         h.XDisplayLabels = nan(size(h.XDisplayData));
         h.YDisplayLabels = nan(size(h.YDisplayData));
@@ -70,7 +71,8 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, N_star
         cb.TickLabels = tick_labels;
 
         figure;
-        h = heatmap(log10(galvanic_sync*100), 'ColorLimits', [0, 2], 'MissingDataColor', nan_color);
+        h = heatmap(log10(galvanic_sync(1:num_affected, 1:num_affected)*100), ...
+                    'ColorLimits', [0, 2], 'MissingDataColor', nan_color);
         colormap(hot)
         h.XDisplayLabels = nan(size(h.XDisplayData));
         h.YDisplayLabels = nan(size(h.YDisplayData));
@@ -83,7 +85,8 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, N_star
         cb.TickLabels = tick_labels;
 
         figure;
-        h = heatmap(log10(control_sync*100), 'ColorLimits', [0, 2], 'MissingDataColor', nan_color);
+        h = heatmap(log10(control_sync(1:num_affected, 1:num_affected)*100), ...
+                    'ColorLimits', [0, 2], 'MissingDataColor', nan_color);
         colormap(hot)
         h.XDisplayLabels = nan(size(h.XDisplayData));
         h.YDisplayLabels = nan(size(h.YDisplayData));
@@ -96,7 +99,8 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, N_star
         cb.TickLabels = tick_labels;
         
         figure;
-        h = heatmap(log10(anodic_sync*100), 'ColorLimits', [0, 2], 'MissingDataColor', nan_color);
+        h = heatmap(log10(anodic_sync(1:num_affected, 1:num_affected)*100), ...
+                    'ColorLimits', [0, 2], 'MissingDataColor', nan_color);
         colormap(hot)
         h.XDisplayLabels = nan(size(h.XDisplayData));
         h.YDisplayLabels = nan(size(h.YDisplayData));

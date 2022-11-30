@@ -2,7 +2,7 @@
 %%% 9.6.21
 %%% Purpose: Calculate decision time and accuracy from population firing
 %%% rates
-sim_name = "%act_Con";
+sim_name = "Brainless_m=0_Con";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 
@@ -20,14 +20,12 @@ num_trials = length(trials);
 %pulse_coherences = 0;
 control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
 pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-galvanic_coherences = [-100, -51.2, -30, -25.6, -20, -10, 0]/100;
-%pulse_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2, 100]/100;
-%galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-%galvanic_coherences = [100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0] / 100;
+galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+anodic_coherences = fliplr([100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0]) / 100;
 
 pulse_amps = [-10*1e-6];
 %pulse_amps = [];
-dc_amps = [-0.6, 0]*1e-6;
+dc_amps = [-1.4, 0, 1.4]*1e-6;
 %dc_amps = [];
 stim_amps = [pulse_amps, dc_amps];
 
@@ -43,10 +41,12 @@ for j = 1:length(stim_amps)
         fprintf("Galvanic Stimulation Amplitude: %0.2fuA \n", stim_amp*1e6)
         output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
             [sim_name, stim_amp*1e6]);
-        if stim_amp == 0
-            coherences = control_coherences;
-        else
+        if stim_amp < 0 %cathodic gs
             coherences = galvanic_coherences;
+        elseif stim_amp == 0 %control
+            coherences = control_coherences;
+        else %anodic gs
+            coherences = anodic_coherences;
         end
     end
     decisions = zeros(num_trials, length(coherences)); %0 for no decision, 1 for P1, 2 for P2
@@ -112,7 +112,7 @@ for j = 1:length(stim_amps)
     end
     decisionpath = strcat(output_stimpath, "/decisions.mat");
     save(decisionpath, "decisions", "decision_times", "avg_dts", "std_dts", ...
-        "avg_acc", "percent_nodec", "coeffs", "batch_coeffs")
+        "avg_acc", "percent_nodec", "coeffs", "batch_coeffs", "batch_acc")
 end
 
 function [decision, dec_idx] = get_decision(pop_frs)

@@ -64,10 +64,10 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     scatter(control_coherences, ctrl_acc, 'k', 'filled')
     scatter(pulse_coherences, pulse_acc, [], default_colors(7, :).*ones(length(pulse_acc), 3), 'filled')
     scatter(galvanic_coherences, galvanic_acc, [], default_colors(5, :).*ones(length(galvanic_acc), 3), 'filled')
-    %scatter(anodic_coherences, anodic_acc, [], default_colors(6, :).*ones(length(anodic_acc), 3), 'filled')
+    scatter(anodic_coherences, anodic_acc, [], default_colors(6, :).*ones(length(anodic_acc), 3), 'filled')
     plot(c, control_w, "k")
     plot(c, galvanic_w, 'Color', default_colors(5, :))
-    %plot(c, anodic_w, 'Color', default_colors(6, :))
+    plot(c, anodic_w, 'Color', default_colors(6, :))
     plot(c, pulse_w, 'Color', default_colors(7, :))
     hold off
     xlabel("Coherence (%)")

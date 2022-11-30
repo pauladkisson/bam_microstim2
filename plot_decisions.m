@@ -28,21 +28,25 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
             end
         end
         load(strcat(datapath, "/decisions.mat"), "avg_acc", "decisions", ...
-            "coeffs", "batch_coeffs", "percent_nodec");
+            "coeffs", "batch_coeffs", "batch_acc", "percent_nodec");
         if pulse
             pulse_acc = avg_acc;
+            pulse_acc_sem = std(batch_acc, [], 2) ./ sqrt(num_batch);
             pulse_coeffs = coeffs;
             pulse_nodec = percent_nodec;
         elseif stim_amp < 0
             galvanic_acc = avg_acc;
+            galvanic_acc_sem = std(batch_acc, [], 2) ./ sqrt(num_batch);
             galvanic_coeffs = coeffs;
             galvanic_nodec = percent_nodec;
         elseif stim_amp == 0
             ctrl_acc = avg_acc;
+            ctrl_acc_sem = std(batch_acc, [], 2) ./ sqrt(num_batch);
             ctrl_coeffs = coeffs;
             ctrl_nodec = percent_nodec;
         else %anodic
             anodic_acc = avg_acc;
+            anodic_acc_sem = std(batch_acc, [], 2) ./ sqrt(num_batch);
             anodic_coeffs = coeffs;
             anodic_nodec = percent_nodec;
         end
@@ -56,15 +60,18 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     pulse_w = logistic_acc(pulse_coeffs, c);
     galvanic_w = logistic_acc(galvanic_coeffs , c);
     control_w = logistic_acc(ctrl_coeffs , c);
-    %anodic_w = logistic_acc(anodic_coeffs , c);
+    anodic_w = logistic_acc(anodic_coeffs , c);
     
     figure;
     set(gca, 'fontsize', 18);
     hold on
-    scatter(control_coherences, ctrl_acc, 'k', 'filled')
-    scatter(pulse_coherences, pulse_acc, [], default_colors(7, :).*ones(length(pulse_acc), 3), 'filled')
-    scatter(galvanic_coherences, galvanic_acc, [], default_colors(5, :).*ones(length(galvanic_acc), 3), 'filled')
-    scatter(anodic_coherences, anodic_acc, [], default_colors(6, :).*ones(length(anodic_acc), 3), 'filled')
+    errorbar(control_coherences, ctrl_acc, ctrl_acc_sem, 'k.', 'MarkerSize', 20)
+    errorbar(pulse_coherences, pulse_acc, pulse_acc_sem, '.', ...
+        'Color', default_colors(7, :), 'MarkerSize', 20)
+    errorbar(galvanic_coherences, galvanic_acc, galvanic_acc_sem, '.', ...
+        'Color', default_colors(5, :), 'MarkerSize', 20)
+    errorbar(anodic_coherences, anodic_acc, anodic_acc_sem, '.', ...
+        'Color', default_colors(6, :), 'MarkerSize', 20)
     plot(c, control_w, "k")
     plot(c, galvanic_w, 'Color', default_colors(5, :))
     plot(c, anodic_w, 'Color', default_colors(6, :))
@@ -73,6 +80,7 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     xlabel("Coherence (%)")
     ylabel("% of trials P1 wins")
     legend("Pulsatile", "Galvanic", "Control", "Anodic")
+    ylim([0, 1])
     
     %Statistics
     %pulse_coeffs = reshape(stim_coeffs(1, :, :), [num_batch, 2]);

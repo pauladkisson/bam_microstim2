@@ -8,12 +8,14 @@ function plot_rasters(sim_name, pulse_amps, stim_amps, ex_neurons, t, ...
     load(sprintf("Simulation %s/ustim/r.mat", sim_name), "ball_r")
     if plot_name == "subplot"
         figure;
+        num_subs = length(stim_amps);
     end
     for j = 1:length(stim_amps)
         if plot_name == "single_stim" && ex_stim_j ~= j || plot_name == "grouped_stim" 
             continue
         end
         stim_amp = stim_amps(j);
+        c = ex_c(j);
         pulse = j<=length(pulse_amps);
         if pulse
             output_stimpath = sprintf("Simulation %s/data/%0.2fuA_pulse", ...
@@ -22,7 +24,7 @@ function plot_rasters(sim_name, pulse_amps, stim_amps, ex_neurons, t, ...
             output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                 [sim_name, stim_amp*1e6]);
         end
-        load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [ex_c, ex_trial])), ...
+        load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, ex_trial])), ...
             "recspikes")
         spikes = zeros(length(t), top_N);
         for nn = 1:top_N
@@ -34,7 +36,7 @@ function plot_rasters(sim_name, pulse_amps, stim_amps, ex_neurons, t, ...
         [g1_time_idx, g1_neuron_idx, g1_idx] = get_spike_idx(spikes);
         
         if plot_name == "subplot"
-            subplot(3, 1, j)
+            subplot(1, num_subs, j)
             hold on
         else
             figure;
@@ -47,14 +49,13 @@ function plot_rasters(sim_name, pulse_amps, stim_amps, ex_neurons, t, ...
         ylabel("Distance from Electrode (um)")
         if pulse
             title("Pulsatile Stimulation")
-            pulsetimes = t_task:1/stim_freq:(t_taskoff-1/stim_freq);
-            scatter(pulsetimes, -5, "k", "Marker", "|")
-            xlim(tlim)
         else
-            if abs(stim_amp) > 0
-                title("Galvanic Stimulation")
-            else
+            if stim_amp < 0
+                title("Cathodic GS")
+            elseif stim_amp == 0
                 title("Control")
+            else
+                title("Anodic GS")
             end
         end
     end

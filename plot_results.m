@@ -43,9 +43,9 @@ ex_neurons = [3];
 tlim = [0, 4];
 ex_stim_j = 1;
 ex_brain = 1;
-ex_trial = 1;
-ex_c = 0;
-plot_name = "ex_trial"; %'ex_trial' or 'single_stim' or 'grouped_stim'
+ex_trial = 7;
+ex_c = [-55, -55, 0, 35]/100;
+plot_name = "subplot"; %'subplot' or 'ex_trial' or 'single_stim' or 'grouped_stim'
 plot_rasters(sim_name, pulse_amps, stim_amps, ex_neurons, t, ...
                       t_task, t_taskoff, stim_freq, default_colors, top_N, ...
                       ex_stim_j, ex_c, ex_trial, tlim, plot_name);

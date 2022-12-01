@@ -46,126 +46,59 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, num_group, num_a
                 stim_frs(j, trial, :) = g1_taskfrs;
             end
         end
-        if contains(sim_name, "Discon")
-            discon_frs = stim_frs;
-        else
-            con_frs = stim_frs;
-        end
-    end
-    pulse_frs = reshape(mean(discon_frs(1, :, :), 2, 'omitnan'), [num_group, 1]);
-    galvanic_frs = reshape(mean(discon_frs(2, :, :), 2, 'omitnan'), [num_group, 1]);
-    control_frs = reshape(mean(discon_frs(3, :, :), 2, 'omitnan'), [num_group, 1]);
-    anodic_frs = reshape(mean(discon_frs(4, :, :), 2, 'omitnan'), [num_group, 1]);
-    
-    pulse_sems = reshape(std(discon_frs(1, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
-    galvanic_sems = reshape(std(discon_frs(2, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
-    control_sems = reshape(std(discon_frs(3, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
-    anodic_sems = reshape(std(discon_frs(4, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
+        pulse_frs = reshape(mean(stim_frs(1, :, :), 2, 'omitnan'), [num_group, 1]);
+        galvanic_frs = reshape(mean(stim_frs(2, :, :), 2, 'omitnan'), [num_group, 1]);
+        control_frs = reshape(mean(stim_frs(3, :, :), 2, 'omitnan'), [num_group, 1]);
+        anodic_frs = reshape(mean(stim_frs(4, :, :), 2, 'omitnan'), [num_group, 1]);
 
-    figure;
-    set(gca, 'fontsize', 18)
-    hold on
-    errorbar(ball_rs*1e6, pulse_frs, pulse_sems, '.', ...
-        'Color', default_colors(7, :), 'MarkerSize', 20)
-    errorbar(ball_rs*1e6, galvanic_frs, galvanic_sems, '.', ...
-        'Color', default_colors(5, :), 'MarkerSize', 20)
-    errorbar(ball_rs*1e6, control_frs, control_sems, "k.", 'MarkerSize', 20)
-    errorbar(ball_rs*1e6, anodic_frs, anodic_sems, '.', ...,
-        'MarkerSize', 20, 'Color', default_colors(6, :))
-    if contains(plot_name, "zoom")
-        ylim([15, 40])
-        xlim([0, 2000])
-    end
-    hold off
-    xlabel("Distance from Electrode (um)")
-    ylabel("Firing Rate (spk/s)")
-    title("Disconnected")
-    
-    %Full Population Aggregated Activity
-    popmean_pulse = reshape(mean(discon_frs(1, :, :), 3, 'omitnan'), [num_trials, 1]);
-    popmean_galvanic = reshape(mean(discon_frs(2, :, :), 3, 'omitnan'), [num_trials, 1]);
-    popmean_ctrl = reshape(mean(discon_frs(3, :, :), 3, 'omitnan'), [num_trials, 1]);
-    popmean_anodic = reshape(mean(discon_frs(4, :, :), 3, 'omitnan'), [num_trials, 1]);
-    norm_pulse = popmean_pulse - popmean_ctrl;
-    norm_galvanic = popmean_galvanic - popmean_ctrl;
-    norm_anodic = popmean_anodic - popmean_ctrl;
-    stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_anodic, 'omitnan'), ...
-                  mean(norm_pulse, 'omitnan')];
-    figure;
-    set(gca, 'fontsize', 18)
-    hold on
-    b = bar(stim_means);
-    b.FaceColor = 'flat';
-    b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
-    x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
-    y = [norm_galvanic'; norm_anodic'; norm_pulse'];
-    plot(x, y, 'ko')
-    hold off
-    xticks([1, 2, 3])
-    xticklabels(["Galvanic", "Anodic", "Pulsatile"])
-    ylabel("Change in Firing Rate (spk/s)")
-    title("Disconnected")
-    
-    %Connected
-    pulse_frs = reshape(mean(con_frs(1, :, :), 2, 'omitnan'), [num_group, 1]);
-    galvanic_frs = reshape(mean(con_frs(2, :, :), 2, 'omitnan'), [num_group, 1]);
-    control_frs = reshape(mean(con_frs(3, :, :), 2, 'omitnan'), [num_group, 1]);
-    anodic_frs = reshape(mean(con_frs(4, :, :), 2, 'omitnan'), [num_group, 1]);
-    
-    pulse_sems = reshape(std(con_frs(1, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
-    galvanic_sems = reshape(std(con_frs(2, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
-    control_sems = reshape(std(con_frs(3, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
-    anodic_sems = reshape(std(con_frs(4, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
+        pulse_sems = reshape(std(stim_frs(1, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
+        galvanic_sems = reshape(std(stim_frs(2, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
+        control_sems = reshape(std(stim_frs(3, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
+        anodic_sems = reshape(std(stim_frs(4, :, :), [], 2, 'omitnan'), [num_group, 1]) / sqrt(num_trials);
 
-    figure;
-    set(gca, 'fontsize', 18)
-    hold on
-    errorbar(ball_rs*1e6, pulse_frs, pulse_sems, '.', ...
-        'Color', default_colors(7, :), 'MarkerSize', 20)
-    errorbar(ball_rs*1e6, galvanic_frs, galvanic_sems, '.', ...
-        'Color', default_colors(5, :), 'MarkerSize', 20)
-    errorbar(ball_rs*1e6, control_frs, control_sems, "k.", 'MarkerSize', 20)
-    errorbar(ball_rs*1e6, anodic_frs, anodic_sems, '.', ...,
-        'MarkerSize', 20, 'Color', default_colors(6, :))
-    if contains(plot_name, "zoom")
-        if any(contains(sim_names, "Con"))
+        figure;
+        set(gca, 'fontsize', 18)
+        hold on
+        errorbar(ball_rs*1e6, pulse_frs, pulse_sems, '.', ...
+            'Color', default_colors(7, :), 'MarkerSize', 20)
+        errorbar(ball_rs*1e6, galvanic_frs, galvanic_sems, '.', ...
+            'Color', default_colors(5, :), 'MarkerSize', 20)
+        errorbar(ball_rs*1e6, control_frs, control_sems, "k.", 'MarkerSize', 20)
+        errorbar(ball_rs*1e6, anodic_frs, anodic_sems, '.', ...,
+            'MarkerSize', 20, 'Color', default_colors(6, :))
+        if contains(plot_name, "zoom")
             ylim([15, 40])
             xlim([0, 2000])
-        elseif any(contains(sim_names, "Int"))
-            ylim([0, 1])
-        elseif any(contains(sim_names, "Rec"))
-            xlim([0, 2000])
-            ylim([40, 70])
         end
+        hold off
+        xlabel("Distance from Electrode (um)")
+        ylabel("Firing Rate (spk/s)")
+        title("Disconnected")
+
+        %Full Population Aggregated Activity
+        popmean_pulse = reshape(mean(stim_frs(1, :, :), 3, 'omitnan'), [num_trials, 1]);
+        popmean_galvanic = reshape(mean(stim_frs(2, :, :), 3, 'omitnan'), [num_trials, 1]);
+        popmean_ctrl = reshape(mean(stim_frs(3, :, :), 3, 'omitnan'), [num_trials, 1]);
+        popmean_anodic = reshape(mean(stim_frs(4, :, :), 3, 'omitnan'), [num_trials, 1]);
+        norm_pulse = popmean_pulse - popmean_ctrl;
+        norm_galvanic = popmean_galvanic - popmean_ctrl;
+        norm_anodic = popmean_anodic - popmean_ctrl;
+        stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_anodic, 'omitnan'), ...
+                      mean(norm_pulse, 'omitnan')];
+        figure;
+        set(gca, 'fontsize', 18)
+        hold on
+        b = bar(stim_means);
+        b.FaceColor = 'flat';
+        b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
+        x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
+        y = [norm_galvanic'; norm_anodic'; norm_pulse'];
+        plot(x, y, 'ko')
+        hold off
+        xticks([1, 2, 3])
+        xticklabels(["Galvanic", "Anodic", "Pulsatile"])
+        ylabel("Change in Firing Rate (spk/s)")
+        ylim([-4, 4])
+        title(sim_name)
     end
-    hold off
-    xlabel("Distance from Electrode (um)")
-    ylabel("Firing Rate (spk/s)")
-    title(sim_names(~contains(sim_names, "Discon")))
-    
-    %Full Population Aggregated Activity
-    popmean_pulse = reshape(mean(con_frs(1, :, :), 3, 'omitnan'), [num_trials, 1]);
-    popmean_galvanic = reshape(mean(con_frs(2, :, :), 3, 'omitnan'), [num_trials, 1]);
-    popmean_ctrl = reshape(mean(con_frs(3, :, :), 3, 'omitnan'), [num_trials, 1]);
-    popmean_anodic = reshape(mean(con_frs(4, :, :), 3, 'omitnan'), [num_trials, 1]);
-    norm_pulse = popmean_pulse - popmean_ctrl - norm_pulse;
-    norm_galvanic = popmean_galvanic - popmean_ctrl - norm_galvanic;
-    norm_anodic = popmean_anodic - popmean_ctrl - norm_anodic;
-    stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_anodic, 'omitnan'), ...
-                  mean(norm_pulse, 'omitnan')];
-    figure;
-    set(gca, 'fontsize', 18)
-    hold on
-    b = bar(stim_means);
-    b.FaceColor = 'flat';
-    b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
-    x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
-    y = [norm_galvanic'; norm_anodic'; norm_pulse'];
-    plot(x, y, 'ko')
-    hold off
-    xticks([1, 2, 3])
-    xticklabels(["Galvanic", "Anodic", "Pulsatile"])
-    ylabel("Change in Firing Rate (spk/s)")
-    title(sim_names(~contains(sim_names, "Discon")))
-    
 end

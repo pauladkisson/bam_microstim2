@@ -95,13 +95,13 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, .
                         anodic_coherences, start_trial, end_trial, num_trials, symmetric);
 
 %% Plot Firing Rate Distribution over distance from electrode
-win_start = t_taskoff - 0.5; %+ stim_ind*dt; % to account for onset spike of pulse
+win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
 win_stop = t_taskoff; %+ 2 + stim_ind*dt;
-ex_c = [-55, -55, 0, 35]/100;
-%ex_c = [0, 0, 0, 0];
+%ex_c = [-55, -55, 0, 35]/100;
+ex_c = [0, 0, 0, 0];
 %  plot_name = 'ex_c' or  'ex_c_zoom' or 'p1_wins' or 'p1_loses'
-plot_name = "p1_wins";
-sim_names = ["Brainless_m=0_Con", "Brainless_m=0_Discon"];
+plot_name = "ex_c";
+sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];
 plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...

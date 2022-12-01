@@ -67,7 +67,13 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, num_group, num_a
         errorbar(ball_rs*1e6, anodic_frs, anodic_sems, '.', ...,
             'MarkerSize', 20, 'Color', default_colors(6, :))
         if contains(plot_name, "zoom")
-            ylim([15, 40])
+            if contains(sim_name, "Discon")
+                ylim([15, 40])
+            elseif contains(sim_name, "Int")
+                ylim([0, 1])
+            elseif contains(sim_name, "Rec")
+                ylim([40, 70])
+            end
             xlim([0, 2000])
         end
         hold off

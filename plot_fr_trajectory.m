@@ -1,9 +1,14 @@
 %%% Paul Adkisson
 %%% 12/6/2022
 %%% Plot Mean Firing Rate Trajectories for each Stimulation Condition
-function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, ex_c, ...
+function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences, ...
-    start_trial, end_trial, num_trials, N, p, f, N_E)
+    default_colors, start_trial, end_trial, num_trials, N, p, f, N_E, plot_name)
+    if plot_name == "p1_wins"
+        win_num = 1;
+    else
+        win_num = 2;
+    end
     dt = t(2) - t(1);
     stim_frs = zeros(length(stim_amps), num_trials, length(t));
     for j = 1:length(stim_amps)
@@ -33,9 +38,10 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, ex_c, ...
         for trial = start_trial:end_trial
             fprintf("Trial: %0.0f \n", trial)
             relative_trial = trial - start_trial + 1;
-            if decisions(relative_trial, stim_coherences==c) ~= 1
+            if decisions(relative_trial, stim_coherences==c) ~= win_num || ...
+                    decision_times(relative_trial, stim_coherences==c) > t_cut
                 stim_frs(j, relative_trial, :) = NaN;
-                continue %skip trials where P1 doesn't win
+                continue %skip trials where P1 doesn't win or decision takes too long
             end
             load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
                    "recspikes")
@@ -53,10 +59,18 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, ex_c, ...
     anodic_trialmean = mean(anodic_frs, 1, 'omitnan');
     
     figure;
+    set(gca, 'Fontsize', 18)
     hold on
-    plot(t, pulse_trialmean)
-    plot(t, galvanic_trialmean)
-    plot(t, control_trialmean)
-    plot(t, anodic_trialmean)
+    plot(t, pulse_trialmean, 'Color', default_colors(7, :), 'Linewidth', 2)
+    plot(t, galvanic_trialmean, 'Color', default_colors(5, :), 'Linewidth', 2)
+    plot(t, control_trialmean, "k", 'Linewidth', 2)
+    plot(t, anodic_trialmean, 'Color', default_colors(6, :), 'Linewidth', 2)
     hold off
+    xlabel("Time (s)")
+    ylabel("P1 Firing Rate (spk/s)")
+    if plot_name == "p1_wins"
+        title("P1 Wins")
+    else
+        title("P1 Loses")
+    end
 end

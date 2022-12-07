@@ -1,7 +1,7 @@
 %%% Paul Adkisson
 %%% 2/14/2022
 %%% Plot Firing Rate Distribution over distance from electrode
-function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, num_group, num_affected, ...
+function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...
                      anodic_coherences, start_trial, end_trial, num_trials, plot_name)
@@ -28,11 +28,18 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, num_group, num_a
                     stim_coherences = anodic_coherences;
                 end
             end
-            load(strcat(output_stimpath, "/decisions.mat"), "decisions")
+            load(strcat(output_stimpath, "/decisions.mat"), "decisions", "decision_times")
+            control_decs = load(sprintf("Simulation %s/data/0.00uA_galvanic/decisions.mat", sim_name));
+            ctrl_decs = control_decs.decisions;
             for trial = start_trial:end_trial
                 relative_trial = trial - start_trial + 1;
-                if (plot_name == "p1_wins" && decisions(relative_trial, stim_coherences==c) ~= 1) || ...
-                        (plot_name == "p1_loses" && decisions(relative_trial, stim_coherences==c) ~= 2)
+                if (plot_name == "p1_wins" && (decisions(relative_trial, stim_coherences==c) ~= 1 || ...
+                        ctrl_decs(relative_trial, control_coherences==ex_c(3))~=1)) || ...
+                   (plot_name == "p1_loses" && ( decisions(relative_trial, stim_coherences==c) ~= 2 || ...
+                        ctrl_decs(relative_trial, control_coherences==ex_c(3))~=2)) || ...
+                   decision_times(relative_trial, stim_coherences==c) > t_cut
+                    %skip trials P1 doesn't win/lose for stim and control
+                    %or decision takes too long
                     stim_frs(j, relative_trial, :) = NaN;
                     continue
                 end
@@ -106,5 +113,31 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, num_group, num_a
         ylabel("Change in Firing Rate (spk/s)")
         %ylim([-4, 4])
         title(sim_name)
+        
+        %Unaffected P1
+        popmean_pulse = reshape(mean(stim_frs(1, :, num_affected+1:end), 3, 'omitnan'), [num_trials, 1]);
+        popmean_galvanic = reshape(mean(stim_frs(2, :, num_affected+1:end), 3, 'omitnan'), [num_trials, 1]);
+        popmean_ctrl = reshape(mean(stim_frs(3, :, num_affected+1:end), 3, 'omitnan'), [num_trials, 1]);
+        popmean_anodic = reshape(mean(stim_frs(4, :, num_affected+1:end), 3, 'omitnan'), [num_trials, 1]);
+        norm_pulse = popmean_pulse - popmean_ctrl;
+        norm_galvanic = popmean_galvanic - popmean_ctrl;
+        norm_anodic = popmean_anodic - popmean_ctrl;
+        stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_anodic, 'omitnan'), ...
+                      mean(norm_pulse, 'omitnan')];
+        figure;
+        set(gca, 'fontsize', 18)
+        hold on
+        b = bar(stim_means);
+        b.FaceColor = 'flat';
+        b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
+        x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
+        y = [norm_galvanic'; norm_anodic'; norm_pulse'];
+        plot(x, y, 'ko')
+        hold off
+        xticks([1, 2, 3])
+        xticklabels(["Galvanic", "Anodic", "Pulsatile"])
+        ylabel("Change in Firing Rate (spk/s)")
+        %ylim([-4, 4])
+        title("P1 Unaffected")
     end
 end

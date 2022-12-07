@@ -111,5 +111,4 @@ function plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
         end
         xlabel("Time (s)")
         ylabel("P1 Firing Rate (spk/s)")
-    end
 end

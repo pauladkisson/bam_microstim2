@@ -83,10 +83,26 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     ylim([0, 1])
     
     %Statistics
-    %pulse_coeffs = reshape(stim_coeffs(1, :, :), [num_batch, 2]);
-    %galvanic_coeffs = reshape(stim_coeffs(2, :, :), [num_batch, 2]);
-    %control_coeffs = reshape(stim_coeffs(3, :, :), [num_batch, 2]);
-    %anodic_coeffs = reshape(stim_coeffs(4, :, :), [num_batch, 2]);
+    a = reshape(stim_coeffs(:, 2:end, 1), [length(stim_amps), num_batch-1]);
+    b = reshape(stim_coeffs(:, 2:end, 2), [length(stim_amps), num_batch-1]);
+    bias = -a ./ b;
+    sensitivity = b .* exp(-a) / (1 + exp(-a)).^2;
+
+    avg_ps_bias = mean(bias(1, :))
+    sem_ps_bias = std(bias(1, :)) ./ sqrt(num_batch)
+    avg_gs_bias = mean(bias(2, :))
+    sem_gs_bias = std(bias(2, :)) ./ sqrt(num_batch)
+    avg_an_bias = mean(bias(4, :))
+    sem_an_bias = std(bias(4, :)) ./ sqrt(num_batch)
+
+    avg_ps_sens = mean(sensitivity(1, :))
+    sem_ps_sens = std(sensitivity(1, :))./ sqrt(num_batch)
+    avg_an_sens = mean(sensitivity(4, :))
+    sem_an_sens = std(sensitivity(4, :)) ./ sqrt(num_batch)
+    dc = c(2) - c(1);
+    center_c0 = abs(c - avg_an_bias) < dc/2;
+    center_c1 = abs(c - avg_an_bias + dc) < dc/2;
+    num_an_sens = (anodic_w(center_c1) - anodic_w(center_c0)) / dc
     
     %Decision Times
     for j = 1:length(stim_amps)

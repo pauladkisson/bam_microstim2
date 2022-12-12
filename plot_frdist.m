@@ -28,16 +28,20 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
                     stim_coherences = anodic_coherences;
                 end
             end
-            load(strcat(output_stimpath, "/decisions.mat"), "decisions", "decision_times")
-            control_decs = load(sprintf("Simulation %s/data/0.00uA_galvanic/decisions.mat", sim_name));
-            ctrl_decs = control_decs.decisions;
+            try
+                load(strcat(output_stimpath, "/decisions.mat"), "decisions", "decision_times")
+                control_decs = load(sprintf("Simulation %s/data/0.00uA_galvanic/decisions.mat", sim_name));
+                ctrl_decs = control_decs.decisions;
+            catch
+                assert(sim_name~="Brainless_m=0_Con")
+            end
             for trial = start_trial:end_trial
                 relative_trial = trial - start_trial + 1;
                 if (plot_name == "p1_wins" && (decisions(relative_trial, stim_coherences==c) ~= 1 || ...
                         ctrl_decs(relative_trial, control_coherences==ex_c(3))~=1)) || ...
                    (plot_name == "p1_loses" && ( decisions(relative_trial, stim_coherences==c) ~= 2 || ...
                         ctrl_decs(relative_trial, control_coherences==ex_c(3))~=2)) || ...
-                   decision_times(relative_trial, stim_coherences==c) > t_cut
+                   (contains(plot_name, "p1") && decision_times(relative_trial, stim_coherences==c) > t_cut)
                     %skip trials P1 doesn't win/lose for stim and control
                     %or decision takes too long
                     stim_frs(j, relative_trial, :) = NaN;
@@ -73,7 +77,11 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         errorbar(ball_rs*1e6, control_frs, control_sems, "k.", 'MarkerSize', 20)
         errorbar(ball_rs*1e6, anodic_frs, anodic_sems, '.', ...,
             'MarkerSize', 20, 'Color', default_colors(6, :))
-        if contains(plot_name, "zoom")
+        if plot_name == "ex_c_<400"
+            xlim([0, 400])
+        elseif plot_name == "ex_c_>400"
+            xlim([400, 2000])
+        elseif plot_name == "ex_c_zoom"
             if contains(sim_name, "Discon")
                 ylim([15, 40])
             elseif contains(sim_name, "Int")
@@ -86,7 +94,7 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         hold off
         xlabel("Distance from Electrode (um)")
         ylabel("Firing Rate (spk/s)")
-        title("Disconnected")
+        title(sim_name)
 
         %Full Population Aggregated Activity
         popmean_pulse = reshape(mean(stim_frs(1, :, :), 3, 'omitnan'), [num_trials, 1]);

@@ -9,17 +9,21 @@ default_colors = get(gca, "colororder");
 start_trial = 1;
 end_trial = 28;
 num_trials = end_trial - start_trial + 1;
-num_batch = 3;
+num_batch = 7;
 
 %control_coherences = 0;
 %galvanic_coherences = 0;
 %pulse_coherences = 0;
 %anodic_coherences = 0;
-control_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2] / 100;
-pulse_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+control_coherences = [-100, -51.2, -25.6, -12.8, -6.4, -3.2, 0, ...
+                      3.2, 6.4, 12.8, 25.6, 51.2, 100] / 100;
+pulse_coherences = [-100, -65, -60, -59, -58, -57, -56, -55, -54, -53, -52, ...
+                    -51.2, -51, -50, -45, -25.6, 0, 25.6] / 100;
 %galvanic_coherences = [-100, -51.2, -30, -25.6, -20, -10, 0]/100;
-galvanic_coherences = [-100, -65, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-anodic_coherences = fliplr([100, 65, 55, 51.2, 45, 40, 35, 30, 25.6, 12.8, 0]) / 100;
+galvanic_coherences = [-100, -65, -60, -59, -58, -57, -56, -55, -54, -53, ...
+                       -52, -51.2, -51, -50, -45, -25.6, 0, 25.6] / 100;
+anodic_coherences = fliplr([100, 65, 55, 51.2, 45, 40, 35, 34, 33, 32, 31, 30, ...
+                            29, 28, 27, 26, 25.6, 12.8, 0]) / 100;
 %pulse_coherences = [-100, -51.2, -25.6, 0, 25.6, 51.2, 100]/100;
 
 pulse_amps = [-10*1e-6];
@@ -95,15 +99,15 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, .
                         anodic_coherences, start_trial, end_trial, num_trials, symmetric);
 
 %% Plot Firing Rate Distribution over distance from electrode
-win_start = 2.8; %+ stim_ind*dt; % to account for onset spike of pulse
-win_stop = 2.9; %+ 2 + stim_ind*dt;
-ex_c = [-55, -55, 0, 35]/100;
+win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
+win_stop = t_taskoff; %+ 2 + stim_ind*dt;
+%ex_c = [-55, -55, 0, 35]/100;
 t_cut = 1; %omit trials with DTs longer than t_cut
-%ex_c = [0, 0, 0, 0];
+ex_c = [0, 0, 0, 0];
 %  plot_name = 'ex_c' or  'ex_c_zoom' or 'p1_wins' or 'p1_loses'
-plot_name = "p1_wins";
-%sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];
-sim_names = ["Brainless_m=0_Con"];
+plot_name = "ex_c_>400";
+sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];
+%sim_names = ["Brainless_m=0_Discon"];
 plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...

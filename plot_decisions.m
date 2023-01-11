@@ -66,16 +66,13 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     set(gca, 'fontsize', 18);
     hold on
     errorbar(control_coherences, ctrl_acc, ctrl_acc_sem, 'k.', 'MarkerSize', 20)
-    %{
     errorbar(pulse_coherences, pulse_acc, pulse_acc_sem, '.', ...
         'Color', default_colors(7, :), 'MarkerSize', 20)
     errorbar(galvanic_coherences, galvanic_acc, galvanic_acc_sem, '.', ...
         'Color', default_colors(5, :), 'MarkerSize', 20)
     errorbar(anodic_coherences, anodic_acc, anodic_acc_sem, '.', ...
         'Color', default_colors(6, :), 'MarkerSize', 20)
-    %}
     plot(c, control_w, "k")
-    %{ 
     plot(c, galvanic_w, 'Color', default_colors(5, :))
     plot(c, anodic_w, 'Color', default_colors(6, :))
     plot(c, pulse_w, 'Color', default_colors(7, :))
@@ -84,7 +81,6 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     ylabel("% of trials P1 wins")
     legend("Pulsatile", "Galvanic", "Control", "Anodic")
     ylim([0, 1])
-    %}
     
     %Statistics
     a = reshape(stim_coeffs(:, 2:end, 1), [length(stim_amps), num_batch-1]);

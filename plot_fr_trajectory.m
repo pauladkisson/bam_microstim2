@@ -3,7 +3,8 @@
 %%% Plot Mean Firing Rate Trajectories for each Stimulation Condition
 function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences, ...
-    default_colors, start_trial, end_trial, num_trials, N, p, f, N_E, plot_name)
+    default_colors, start_trial, end_trial, num_trials, N, p, f, N_E, ...
+    start_thresh, stop_thresh, plot_name)
     if plot_name == "p1_wins"
         win_num = 1;
     else
@@ -11,6 +12,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     end
     dt = t(2) - t(1);
     stim_frs = zeros(length(stim_amps), num_trials, length(t));
+    stim_slopes = zeros(length(stim_amps), num_trials);
     for j = 1:length(stim_amps)
         stim_amp = stim_amps(j);
         c = ex_c(j);
@@ -38,15 +40,36 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
         for trial = start_trial:end_trial
             fprintf("Trial: %0.0f \n", trial)
             relative_trial = trial - start_trial + 1;
+            dec_time = decision_times(relative_trial, stim_coherences==c);
             if decisions(relative_trial, stim_coherences==c) ~= win_num || ...
-                    decision_times(relative_trial, stim_coherences==c) > t_cut
+                    dec_time > t_cut
                 stim_frs(j, relative_trial, :) = NaN;
-                continue %skip trials where P1 doesn't win or decision takes too long
+                stim_slopes(j, relative_trial) = NaN;
+                continue %skip trials where P1 doesn't win/lose or decision takes too long
             end
             load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
                    "recspikes")
             [pop_frs, ~] = recspikes2popfrs(recspikes, t, N, dt, p, f, N_E);
             stim_frs(j, relative_trial, :) = pop_frs(:, 1);
+            if plot_name == "p1_wins"
+                preidx = find(pop_frs(:, 1)>=start_thresh, 1);
+                postidx = find(pop_frs(:, 1)>=stop_thresh, 1);
+                slope_t = t(preidx:postidx);
+                slope = (stop_thresh-start_thresh) / (t(postidx)-t(preidx));
+                coeffs = [slope, pop_frs(preidx, 1) - slope*t(preidx)];
+                stim_slopes(j, relative_trial) = coeffs(1);
+                
+                %plot to debug low values
+                debug = false; 
+                if debug
+                    figure;
+                    slope_y = coeffs(2) + coeffs(1)*slope_t;
+                    hold on;
+                    plot(t, pop_frs(:, 1))
+                    plot(slope_t, slope_y, "r--")
+                    break
+                end                     
+            end
         end
     end
     pulse_frs = reshape(stim_frs(1, :, :), [num_trials, length(t)]);
@@ -73,4 +96,30 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     else
         title("P1 Loses")
     end
+    
+    pulse_slopes = reshape(stim_slopes(1, :, :), [num_trials, 1]);
+    galvanic_slopes = reshape(stim_slopes(2, :, :), [num_trials, 1]);
+    control_slopes = reshape(stim_slopes(3, :, :), [num_trials, 1]);
+    anodic_slopes = reshape(stim_slopes(4, :, :), [num_trials, 1]);
+    mean_ctrl = mean(control_slopes, 'omitnan');
+    norm_ps = pulse_slopes ./ mean_ctrl;
+    norm_gs = galvanic_slopes ./ mean_ctrl;
+    norm_an = anodic_slopes ./ mean_ctrl;
+    mean_slopes = [mean(norm_gs, 'omitnan'), mean(norm_an, 'omitnan'), mean(norm_ps, 'omitnan')]; 
+    
+    figure;
+    set(gca, 'fontsize', 18)
+    hold on
+    b = bar(mean_slopes*100);
+    b.FaceColor = 'flat';
+    b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
+    %b.CData = [default_colors(7, :); default_colors(5, :); [0, 0, 0]; default_colors(6, :)];
+    x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
+    y = [norm_gs'; norm_an'; norm_ps'] .* 100;
+    plot(x, y, 'ko')
+    hold off
+    xticks([1, 2, 3])
+    xticklabels(["Galvanic", "Anodic", "Pulsatile"])
+    ylabel("Normalized Firing Rate Slope (%)")
+    title("Recurrent Excitation Metric")
 end

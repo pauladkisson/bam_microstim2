@@ -106,14 +106,14 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, .
 
 %% Plot Firing Rate Distribution over distance from electrode
 win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
-win_stop = t_taskoff; %+ 2 + stim_ind*dt;
-%ex_c = [-55, -55, 0, 35]/100;
+win_stop = t_task + 0.1; %+ 2 + stim_ind*dt;
 t_cut = 1; %omit trials with DTs longer than t_cut
-ex_c = [0, 0, 0, 0];
+%ex_c = [0, 0, 0, 0];
+ex_c = [-55, -55, 0, 35]/100;
 %  plot_name = 'ex_c' or  'ex_c_zoom' or 'p1_wins' or 'p1_loses'
-plot_name = "ex_c_>400";
-sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];
-%sim_names = ["Brainless_m=0_Discon"];
+plot_name = "p1_wins";
+%sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];
+sim_names = ["Brainless_m=0_Con"];
 plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...
@@ -126,11 +126,14 @@ plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
             
 %% Plot FR Trajectories
 ex_c = [-55, -55, 0, 30] ./ 100;
-t_cut = 1;
-plot_name = "p1_loses"; %p1_wins or p1_loses
+t_cut = 1.5;
+start_thresh = 10;
+stop_thresh = 20;
+plot_name = "p1_wins"; %p1_wins or p1_loses
 plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences, ...
-    default_colors, start_trial, end_trial, num_trials, N, p, f, N_E, plot_name)
+    default_colors, start_trial, end_trial, num_trials, N, p, f, N_E, ...
+    start_thresh, stop_thresh, plot_name)
 
 %% Plot Pulsatile Blocking Validation
 plot_name = "amp"; %"amp" or "spont"

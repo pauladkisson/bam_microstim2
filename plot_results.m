@@ -106,10 +106,10 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, .
 
 %% Plot Firing Rate Distribution over distance from electrode
 win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
-win_stop = t_task + 0.1; %+ 2 + stim_ind*dt;
-t_cut = 1; %omit trials with DTs longer than t_cut
+win_stop = t_task + 0.1;
+t_cut = 1.5; %omit trials with DTs longer than t_cut
 %ex_c = [0, 0, 0, 0];
-ex_c = [-55, -55, 0, 35]/100;
+ex_c = [-55, -55, 0, 30]/100;
 %  plot_name = 'ex_c' or  'ex_c_zoom' or 'p1_wins' or 'p1_loses'
 plot_name = "p1_wins";
 %sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];

@@ -59,15 +59,16 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
                 coeffs = [slope, pop_frs(preidx, 1) - slope*t(preidx)];
                 stim_slopes(j, relative_trial) = coeffs(1);
                 
-                %plot to debug low values
-                debug = false; 
+                %plot to debug outliers
+                debug = slope > 100; 
                 if debug
                     figure;
                     slope_y = coeffs(2) + coeffs(1)*slope_t;
                     hold on;
                     plot(t, pop_frs(:, 1))
                     plot(slope_t, slope_y, "r--")
-                    break
+                    title(sprintf("j=%0.0f", j))
+                    %break
                 end                     
             end
         end
@@ -102,24 +103,24 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     control_slopes = reshape(stim_slopes(3, :, :), [num_trials, 1]);
     anodic_slopes = reshape(stim_slopes(4, :, :), [num_trials, 1]);
     mean_ctrl = mean(control_slopes, 'omitnan');
-    norm_ps = pulse_slopes ./ mean_ctrl;
-    norm_gs = galvanic_slopes ./ mean_ctrl;
-    norm_an = anodic_slopes ./ mean_ctrl;
+    norm_ps = pulse_slopes - mean_ctrl;
+    norm_gs = galvanic_slopes - mean_ctrl;
+    norm_an = anodic_slopes - mean_ctrl;
     mean_slopes = [mean(norm_gs, 'omitnan'), mean(norm_an, 'omitnan'), mean(norm_ps, 'omitnan')]; 
     
     figure;
     set(gca, 'fontsize', 18)
     hold on
-    b = bar(mean_slopes*100);
+    b = bar(mean_slopes);
     b.FaceColor = 'flat';
     b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
     %b.CData = [default_colors(7, :); default_colors(5, :); [0, 0, 0]; default_colors(6, :)];
     x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
-    y = [norm_gs'; norm_an'; norm_ps'] .* 100;
+    y = [norm_gs'; norm_an'; norm_ps'];
     plot(x, y, 'ko')
     hold off
     xticks([1, 2, 3])
     xticklabels(["Galvanic", "Anodic", "Pulsatile"])
-    ylabel("Normalized Firing Rate Slope (%)")
+    ylabel("Change in Firing Rate Slope (spk/s^2)")
     title("Recurrent Excitation Metric")
 end

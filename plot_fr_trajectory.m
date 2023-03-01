@@ -1,8 +1,8 @@
 %%% Paul Adkisson
 %%% 12/6/2022
 %%% Plot Mean Firing Rate Trajectories for each Stimulation Condition
-function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
-    pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences, ...
+function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, ...
+    ex_c, pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences, ...
     default_colors, start_trial, end_trial, num_trials, N, p, f, N_E, ...
     start_thresh, stop_thresh, plot_name)
     if plot_name == "p1_wins"
@@ -12,6 +12,8 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     end
     dt = t(2) - t(1);
     stim_frs = zeros(length(stim_amps), num_trials, length(t));
+    aligned_t = dt-1:dt:1-dt;
+    aligned_frs = zeros(length(stim_amps), num_trials, length(aligned_t));
     stim_slopes = zeros(length(stim_amps), num_trials);
     for j = 1:length(stim_amps)
         stim_amp = stim_amps(j);
@@ -44,6 +46,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
             if decisions(relative_trial, stim_coherences==c) ~= win_num || ...
                     dec_time > t_cut
                 stim_frs(j, relative_trial, :) = NaN;
+                aligned_frs(j, relative_trial, :) = NaN;
                 stim_slopes(j, relative_trial) = NaN;
                 continue %skip trials where P1 doesn't win/lose or decision takes too long
             end
@@ -51,6 +54,9 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
                    "recspikes")
             [pop_frs, ~] = recspikes2popfrs(recspikes, t, N, dt, p, f, N_E);
             stim_frs(j, relative_trial, :) = pop_frs(:, 1);
+            aligned_mask = t>=dec_time+t_task-1+dt/2 & ...
+                           t<dec_time+t_task+1-dt/2;
+            aligned_frs(j, relative_trial, :) = pop_frs(aligned_mask, 1);
             if plot_name == "p1_wins"
                 preidx = find(pop_frs(:, 1)>=start_thresh, 1);
                 postidx = find(pop_frs(:, 1)>=stop_thresh, 1);
@@ -123,4 +129,27 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     xticklabels(["Galvanic", "Anodic", "Pulsatile"])
     ylabel("Change in Firing Rate Slope (spk/s^2)")
     title("Recurrent Excitation Metric")
+    
+    ps_aligned = reshape(aligned_frs(1, :, :), [num_trials, length(aligned_t)]);
+    ps_aligned_mean = mean(ps_aligned, 1, 'omitnan');
+    gs_aligned = reshape(aligned_frs(2, :, :), [num_trials, length(aligned_t)]);
+    gs_aligned_mean = mean(gs_aligned, 1, 'omitnan');
+    ctrl_aligned = reshape(aligned_frs(3, :, :), [num_trials, length(aligned_t)]);
+    ctrl_aligned_mean = mean(ctrl_aligned, 1, 'omitnan');
+    an_aligned = reshape(aligned_frs(4, :, :), [num_trials, length(aligned_t)]);
+    an_aligned_mean = mean(an_aligned, 1, 'omitnan');
+    
+    figure;
+    hold on
+    plot(aligned_t, ps_aligned, 'Color', default_colors(7, :))
+    plot(aligned_t, ps_aligned_mean, 'Color', default_colors(7, :), 'Linewidth', 2)
+    plot(aligned_t, gs_aligned, 'Color', default_colors(5, :))
+    plot(aligned_t, gs_aligned_mean, 'Color', default_colors(5, :), 'Linewidth', 2)
+    plot(aligned_t, an_aligned, 'Color', default_colors(6, :))
+    plot(aligned_t, an_aligned_mean, 'Color', default_colors(6, :), 'Linewidth', 2)
+    plot(aligned_t, ctrl_aligned, 'k-')
+    plot(aligned_t, ctrl_aligned_mean, 'k-', 'Linewidth', 2)
+    hold off
+    
+    disp("BP")
 end

@@ -130,6 +130,31 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     ylabel("Change in Firing Rate Slope (spk/s^2)")
     title("Recurrent Excitation Metric")
     
+    pulse_max_frs = max(pulse_frs, [], 2);
+    galvanic_max_frs = max(galvanic_frs, [], 2);
+    control_max_frs = max(control_frs, [], 2);
+    anodic_max_frs = max(anodic_frs, [], 2);
+    mean_ctrl = mean(control_max_frs, 'omitnan');
+    norm_ps = pulse_max_frs - mean_ctrl;
+    norm_gs = galvanic_max_frs - mean_ctrl;
+    norm_an = anodic_max_frs - mean_ctrl;
+    mean_max_frs = [mean(norm_gs, 'omitnan'), mean(norm_an, 'omitnan'), mean(norm_ps, 'omitnan')]; 
+    
+    figure;
+    set(gca, 'fontsize', 18)
+    hold on
+    b = bar(mean_max_frs);
+    b.FaceColor = 'flat';
+    b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
+    x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
+    y = [norm_gs'; norm_an'; norm_ps'];
+    plot(x, y, 'ko')
+    hold off
+    xticks([1, 2, 3])
+    xticklabels(["Galvanic", "Anodic", "Pulsatile"])
+    ylabel("Change in Maximum Firing Rate (spk/s)")
+    title("Recurrent Excitation Metric: P1 Loses")
+    
     ps_aligned = reshape(aligned_frs(1, :, :), [num_trials, length(aligned_t)]);
     ps_aligned_mean = mean(ps_aligned, 1, 'omitnan');
     gs_aligned = reshape(aligned_frs(2, :, :), [num_trials, length(aligned_t)]);
@@ -150,6 +175,4 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     plot(aligned_t, ctrl_aligned, 'k-')
     plot(aligned_t, ctrl_aligned_mean, 'k-', 'Linewidth', 2)
     hold off
-    
-    disp("BP")
 end

@@ -138,6 +138,8 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     far_ticks = 0:500:2000;
     near_map = pink;
     far_map = hot;
+    near_lims = [0, 150];
+    far_lims = [0, 15];
     
     figure;
     s = pcolor(t_down, ball_rs(near_mask)*1e6, ps_down(:, near_mask)');
@@ -155,7 +157,7 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     figure;
     s = pcolor(t_down, ball_rs(far_mask)*1e6, ps_down(:, far_mask)');
     colormap(far_map)
-    caxis([0, 50])
+    caxis(far_lims)
     cbar = colorbar('FontSize', 20);
     cbar.Label.String = "P1 Firing Rates (spk/s)";
     set(s, 'EdgeColor', 'none');
@@ -167,7 +169,7 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     figure;
     s = pcolor(t_down, ball_rs(near_mask)*1e6, gs_down(:, near_mask)');
     colormap(near_map)
-    caxis([0, 150])
+    caxis(near_lims)
     cbar = colorbar('FontSize', 20);
     cbar.Label.String = "P1 Firing Rates (spk/s)";
     set(s, 'EdgeColor', 'none');
@@ -179,7 +181,7 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     figure;
     s = pcolor(t_down, ball_rs(far_mask)*1e6, gs_down(:, far_mask)');
     colormap(far_map)
-    caxis([0, 50])
+    caxis(far_lims)
     cbar = colorbar('FontSize', 20);
     cbar.Label.String = "P1 Firing Rates (spk/s)";
     set(s, 'EdgeColor', 'none');
@@ -191,7 +193,7 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     figure;
     s = pcolor(t_down, ball_rs(near_mask)*1e6, ctrl_down(:, near_mask)');
     colormap(near_map)
-    caxis([0, 150])
+    caxis(near_lims)
     cbar = colorbar('FontSize', 20);
     cbar.Label.String = "P1 Firing Rates (spk/s)";
     set(s, 'EdgeColor', 'none');
@@ -203,7 +205,7 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     figure;
     s = pcolor(t_down, ball_rs(far_mask)*1e6, ctrl_down(:, far_mask)');
     colormap(far_map)
-    caxis([0, 50])
+    caxis(far_lims)
     cbar = colorbar('FontSize', 20);
     cbar.Label.String = "P1 Firing Rates (spk/s)";
     set(s, 'EdgeColor', 'none');
@@ -215,7 +217,7 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     figure;
     s = pcolor(t_down, ball_rs(near_mask)*1e6, an_down(:, near_mask)');
     colormap(near_map)
-    caxis([0, 150])
+    caxis(near_lims)
     cbar = colorbar('FontSize', 20);
     cbar.Label.String = "P1 Firing Rates (spk/s)";
     set(s, 'EdgeColor', 'none');
@@ -227,7 +229,7 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     figure;
     s = pcolor(t_down, ball_rs(far_mask)*1e6, an_down(:, far_mask)');
     colormap(far_map)
-    caxis([0, 50])
+    caxis(far_lims)
     cbar = colorbar('FontSize', 20);
     cbar.Label.String = "P1 Firing Rates (spk/s)";
     set(s, 'EdgeColor', 'none');

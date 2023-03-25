@@ -105,9 +105,9 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, .
                         anodic_coherences, start_trial, end_trial, num_trials, symmetric);
 
 %% Plot Firing Rate Distribution over distance from electrode
-win_start = t_task + stim_ind*dt; % to account for onset spike of pulse
-win_stop = t_task + 0.1;
-t_cut = 1.5; %omit trials with DTs longer than t_cut
+win_start = t_taskoff - 0.1; %+ stim_ind*dt; % to account for onset spike of pulse
+win_stop = t_taskoff;
+t_cut = 1.75; %omit trials with DTs longer than t_cut
 %ex_c = [0, 0, 0, 0];
 ex_c = [-55, -55, 0, 30]/100;
 %  plot_name = 'ex_c' or  'ex_c_zoom' or 'p1_wins' or 'p1_loses'
@@ -129,7 +129,7 @@ ex_c = [-55, -55, 0, 30] ./ 100;
 t_cut = 1.5;
 start_thresh = 10;
 stop_thresh = 20;
-plot_name = "p1_wins"; %p1_wins or p1_loses
+plot_name = "p1_loses"; %p1_wins or p1_loses
 plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, ...
     ex_c, pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences, ...
     default_colors, start_trial, end_trial, num_trials, N, p, f, N_E, ...
@@ -138,7 +138,7 @@ plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, ...
 %% Plot FR Heatmaps
 ex_c = [-55, -55, 0, 30] ./ 100;
 t_cut = 2;
-plot_name = "p1_wins"; %p1_wins or p1_loses
+plot_name = "p1_loses"; %p1_wins or p1_loses
 plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences, ...
     default_colors, start_trial, end_trial, num_trials, num_group, num_affected, plot_name)

@@ -3,7 +3,7 @@
 %%% Main Body of Wang (2002) Biophysical Attractor Model
 
 clear;
-sim_name = "Test_gsval";
+sim_name = "record_currents";
 sim_path = sprintf("Simulation %s", sim_name);
 tic;
 load(strcat(sim_path, "/bam_constants.mat"))
@@ -36,8 +36,8 @@ for j = 1:length(stim_amps)
         input_coherentpath = sprintf("Simulation %s/spikes/c=%0.3f", sim_name, c);
         output_coherentpath = strcat(output_stimpath, sprintf("/c=%0.3f", c));
         mkdir(output_coherentpath)
-        parfor trial = start_trial:end_trial
-        %for trial = start_trial:end_trial
+        %parfor trial = start_trial:end_trial
+        for trial = start_trial:end_trial
             fprintf("trial: %0.0f \n", trial)
             input_trialpath = strcat(input_coherentpath, sprintf("/trial%0.0f.mat", trial));
             output_trialpath = strcat(output_coherentpath, sprintf("/trial%0.0f.mat", trial));
@@ -57,6 +57,11 @@ for j = 1:length(stim_amps)
                 RP_ps_ind = zeros(1, N);
             end
             Vm = EL*ones(length(t), N);
+            I_AMPA_ext = zeros(length(t), 1);
+            I_AMPA_rec = zeros(length(t), 1);
+            I_NMDA = zeros(length(t), 1);
+            I_GABA = zeros(length(t), 1);
+            I_LEAK = zeros(length(t), 1);
             s_ampa = zeros(length(t), N);
             s_ampa_ext = zeros(length(t), N);
             s_nmda = zeros(length(t), N);
@@ -77,6 +82,13 @@ for j = 1:length(stim_amps)
                     I_temp = synapse_current(V_ch, s_ampa_ch, g_ampa_ext, s_nmda_ch, s_gaba_ch, ...
                         adja, AMPA, NMDA, GABA);
                     I_ch = sum(I_temp, 1);
+                    % Record currents
+                    I_AMPA_ext(i) = mean(g_ampa_ext(1:num_group).*(0-Vm(i, 1:num_group)));
+                    I_AMPA = mean(I_temp(1, 1:num_group));
+                    I_AMPA_rec(i) = I_AMPA - I_AMPA_ext(i);
+                    I_NMDA(i) = mean(I_temp(2, 1:num_group));
+                    I_GABA(i) = mean(I_temp(3, 1:num_group));
+                    I_LEAK(i) = mean(-gL(1).*(Vm(i, 1:num_group)-EL));
                 end
 
                 %External input
@@ -177,8 +189,9 @@ for j = 1:length(stim_amps)
                     RP_ps_ind(in_ps_rp) = max(RP_ps_ind(in_ps_rp) - 1, 0);
                 end
             end 
-            fast_parsave(output_trialpath, Vm);
-            %save(output_trialpath, 'Vm')
+            %fast_parsave(output_trialpath, Vm);
+            save(output_trialpath, 'Vm', 'I_AMPA_ext', 'I_AMPA_rec', ...
+                'I_NMDA', 'I_GABA', 'I_LEAK')
         end
     end
 end

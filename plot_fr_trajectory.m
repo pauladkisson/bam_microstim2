@@ -112,7 +112,8 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     norm_ps = pulse_slopes - mean_ctrl;
     norm_gs = galvanic_slopes - mean_ctrl;
     norm_an = anodic_slopes - mean_ctrl;
-    mean_slopes = [mean(norm_gs, 'omitnan'), mean(norm_an, 'omitnan'), mean(norm_ps, 'omitnan')]; 
+    mean_slopes = [mean(norm_gs, 'omitnan'), mean(norm_an, 'omitnan'), mean(norm_ps, 'omitnan')];
+    std_slopes = [std(norm_gs, [], 'omitnan'), std(norm_an, [], 'omitnan'), std(norm_ps, [], 'omitnan')];
     
     figure;
     set(gca, 'fontsize', 18)
@@ -121,9 +122,8 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     b.FaceColor = 'flat';
     b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
     %b.CData = [default_colors(7, :); default_colors(5, :); [0, 0, 0]; default_colors(6, :)];
-    x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
-    y = [norm_gs'; norm_an'; norm_ps'];
-    plot(x, y, 'ko')
+    x = [1, 2, 3];
+    errorbar(x, mean_slopes, std_slopes, 'k.', 'Linewidth', 20, 'Capsize', 0)
     hold off
     xticks([1, 2, 3])
     xticklabels(["Galvanic", "Anodic", "Pulsatile"])
@@ -138,7 +138,8 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     norm_ps = pulse_max_frs - mean_ctrl;
     norm_gs = galvanic_max_frs - mean_ctrl;
     norm_an = anodic_max_frs - mean_ctrl;
-    mean_max_frs = [mean(norm_gs, 'omitnan'), mean(norm_an, 'omitnan'), mean(norm_ps, 'omitnan')]; 
+    mean_max_frs = [mean(norm_gs, 'omitnan'), mean(norm_an, 'omitnan'), mean(norm_ps, 'omitnan')];
+    std_max_frs = [std(norm_gs, [], 'omitnan'), std(norm_an, [], 'omitnan'), std(norm_ps, [], 'omitnan')];
     
     figure;
     set(gca, 'fontsize', 18)
@@ -146,9 +147,8 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     b = bar(mean_max_frs);
     b.FaceColor = 'flat';
     b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
-    x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
-    y = [norm_gs'; norm_an'; norm_ps'];
-    plot(x, y, 'ko')
+    x = [1, 2, 3];
+    errorbar(x, mean_max_frs, std_max_frs, 'k.', 'Linewidth', 20, 'Capsize', 0)
     hold off
     xticks([1, 2, 3])
     xticklabels(["Galvanic", "Anodic", "Pulsatile"])

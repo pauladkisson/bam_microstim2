@@ -106,20 +106,21 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         norm_anodic = popmean_anodic - popmean_ctrl;
         stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_anodic, 'omitnan'), ...
                       mean(norm_pulse, 'omitnan')];
+        stim_stds = [std(norm_galvanic, [], 'omitnan'), std(norm_anodic, [], 'omitnan'), ...
+                     std(norm_pulse, [], 'omitnan')];
         figure;
         set(gca, 'fontsize', 18)
         hold on
-        b = bar(stim_means);
+        b = bar(stim_means, 1);
         b.FaceColor = 'flat';
         b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
-        x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
-        y = [norm_galvanic'; norm_anodic'; norm_pulse'];
-        plot(x, y, 'ko')
+        x = [1, 2, 3];
+        errorbar(x, stim_means, stim_stds, 'k.', 'Linewidth', 20, 'Capsize', 0)
         hold off
         xticks([1, 2, 3])
         xticklabels(["Galvanic", "Anodic", "Pulsatile"])
         ylabel("Change in Firing Rate (spk/s)")
-        %ylim([-4, 4])
+        ylim([-4, 4])
         title(sim_name)
         
         %Unaffected P1
@@ -131,7 +132,7 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         norm_galvanic = popmean_galvanic - popmean_ctrl;
         norm_anodic = popmean_anodic - popmean_ctrl;
         stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_anodic, 'omitnan'), ...
-                      mean(norm_pulse, 'omitnan')];
+                      mean(norm_pulse, 'omitnan')]; 
         figure;
         set(gca, 'fontsize', 18)
         hold on
@@ -173,32 +174,5 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         ylabel("Change in Firing Rate (spk/s)")
         %ylim([-4, 4])
         title("Affected P1")
-        
-        %Full Population Aggregated Activity -- unblocking closest neuron
-        stim_frs(2, ~isnan(stim_frs(2, :, 1)), 1) = 200;
-        popmean_pulse = reshape(mean(stim_frs(1, :, :), 3, 'omitnan'), [num_trials, 1]);
-        popmean_galvanic = reshape(mean(stim_frs(2, :, :), 3, 'omitnan'), [num_trials, 1]);
-        popmean_ctrl = reshape(mean(stim_frs(3, :, :), 3, 'omitnan'), [num_trials, 1]);
-        popmean_anodic = reshape(mean(stim_frs(4, :, :), 3, 'omitnan'), [num_trials, 1]);
-        norm_pulse = popmean_pulse - popmean_ctrl;
-        norm_galvanic = popmean_galvanic - popmean_ctrl;
-        norm_anodic = popmean_anodic - popmean_ctrl;
-        stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_anodic, 'omitnan'), ...
-                      mean(norm_pulse, 'omitnan')];
-        figure;
-        set(gca, 'fontsize', 18)
-        hold on
-        b = bar(stim_means);
-        b.FaceColor = 'flat';
-        b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
-        x = [ones(1, num_trials); 2*ones(1, num_trials); 3*ones(1, num_trials)];
-        y = [norm_galvanic'; norm_anodic'; norm_pulse'];
-        plot(x, y, 'ko')
-        hold off
-        xticks([1, 2, 3])
-        xticklabels(["Galvanic", "Anodic", "Pulsatile"])
-        ylabel("Change in Firing Rate (spk/s)")
-        %ylim([-4, 4])
-        title("unblocking closest neuron")
     end
 end

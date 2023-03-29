@@ -93,6 +93,19 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     ctrl_down = ctrl_frs(1:down_factor:end, 1:num_affected);
     an_down = an_frs(1:down_factor:end, 1:num_affected);
     
+    % shift data so it is discontinuous
+    low_fr_lim = 15;
+    high_fr_lim = 200;
+    frac_high = 1/3;
+    ps_down(ps_down>=low_fr_lim) = low_fr_lim + (ps_down(ps_down>=low_fr_lim)-low_fr_lim) ./ ...
+                                    (high_fr_lim - low_fr_lim) .* (frac_high*low_fr_lim);
+    gs_down(gs_down>=low_fr_lim) = low_fr_lim + (gs_down(gs_down>=low_fr_lim)-low_fr_lim) ./ ...
+                                    (high_fr_lim - low_fr_lim) .* (frac_high*low_fr_lim); 
+    ctrl_down(ctrl_down>=low_fr_lim) = low_fr_lim + (ctrl_down(ctrl_down>=low_fr_lim)-low_fr_lim) ./ ...
+                                    (high_fr_lim - low_fr_lim) .* (frac_high*low_fr_lim);
+    an_down(an_down>=low_fr_lim) = low_fr_lim + (an_down(an_down>=low_fr_lim)-low_fr_lim) ./ ...
+                                    (high_fr_lim - low_fr_lim) .* (frac_high*low_fr_lim);
+    
     xlims = [0.5, 3.5]; %omit first 0.5s to avoid 0FR artifact 
     figure;
     hold on
@@ -103,6 +116,7 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     legend(["PS", "CGS", "AGS", "No Stim"])
     xlabel("Time (s)")
     xlim(xlims)
+    ylim([0, 5])
     ylabel("Coefficient of Variation (unitless)")
     hold off
     
@@ -115,6 +129,7 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     legend(["PS", "CGS", "AGS", "No Stim"])
     xlabel("Time (s)")
     xlim(xlims)
+    ylim([-2, 10])
     ylabel("Skewness (unitless)")
     hold off
     
@@ -127,20 +142,83 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     legend(["PS", "CGS", "AGS", "No Stim"])
     xlabel("Time (s)")
     xlim(xlims)
+    ylim([0, 100])
     ylabel("Kurtosis (unitless)")
     hold off
     
     near_mask = ball_rs<=500e-6;
-    %far_mask = ~near_mask;
     far_mask = logical(ones(size(ball_rs)));
     near_ticks = 0:100:500;
-    %far_ticks = 500:500:2000;
     far_ticks = 0:500:2000;
     near_map = pink;
     far_map = hot;
     near_lims = [0, 150];
-    far_lims = [0, 15];
+    far_lims = [0, 50];
+    clim = low_fr_lim + low_fr_lim * frac_high;
+    %low_ticks = [0, 10, 20, 30, 40, 50];
+    low_ticks = [0, 5, 10, 15];
+    high_ticks = [50, 100, 150, 200];
+    cticks = [low_ticks, low_fr_lim + (high_ticks-low_fr_lim)./(high_fr_lim-low_fr_lim).*low_fr_lim.*frac_high];
+    cticklabels = [low_ticks, high_ticks];
     
+    figure;
+    s = pcolor(t_down, ball_rs(far_mask)*1e6, ps_down(:, far_mask)');
+    colormap(far_map)
+    caxis([0, clim])
+    cbar = colorbar('FontSize', 20);
+    cbar.Label.String = "P1 Firing Rates (spk/s)";
+    cbar.Ticks = cticks;
+    cbar.TickLabels = cticklabels;
+    set(s, 'EdgeColor', 'none');
+    xlabel("Time (s)")
+    ylabel("Distance from Electrode (um)")
+    yticks(far_ticks)
+    title("Pulse")
+    
+    figure;
+    s = pcolor(t_down, ball_rs(far_mask)*1e6, gs_down(:, far_mask)');
+    colormap(far_map)
+    caxis([0, clim])
+    cbar = colorbar('FontSize', 20);
+    cbar.Label.String = "P1 Firing Rates (spk/s)";
+    cbar.Ticks = cticks;
+    cbar.TickLabels = cticklabels;
+    set(s, 'EdgeColor', 'none');
+    xlabel("Time (s)")
+    ylabel("Distance from Electrode (um)")
+    yticks(far_ticks)
+    title("Galvanic")
+    
+    figure;
+    s = pcolor(t_down, ball_rs(far_mask)*1e6, ctrl_down(:, far_mask)');
+    colormap(far_map)
+    caxis([0, clim])
+    cbar = colorbar('FontSize', 20);
+    cbar.Label.String = "P1 Firing Rates (spk/s)";
+    cbar.Ticks = cticks;
+    cbar.TickLabels = cticklabels;
+    set(s, 'EdgeColor', 'none');
+    xlabel("Time (s)")
+    ylabel("Distance from Electrode (um)")
+    yticks(far_ticks)
+    title("Control")
+    
+    figure;
+    s = pcolor(t_down, ball_rs(far_mask)*1e6, an_down(:, far_mask)');
+    colormap(far_map)
+    caxis([0, clim])
+    cbar = colorbar('FontSize', 20);
+    cbar.Label.String = "P1 Firing Rates (spk/s)";
+    cbar.Ticks = cticks;
+    cbar.TickLabels = cticklabels;
+    set(s, 'EdgeColor', 'none');
+    xlabel("Time (s)")
+    ylabel("Distance from Electrode (um)")
+    yticks(far_ticks)
+    title("Anodic")
+    
+    % Near vs Far version
+    %{
     figure;
     s = pcolor(t_down, ball_rs(near_mask)*1e6, ps_down(:, near_mask)');
     colormap(near_map)
@@ -177,6 +255,18 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     ylabel("Distance from Electrode (um)")
     yticks(near_ticks)
     title("CGS Near")
+    
+    figure;
+    s = pcolor(t_down, ball_rs(far_mask)*1e6, ps_down(:, far_mask)');
+    colormap(near_map)
+    caxis(near_lims)
+    cbar = colorbar('FontSize', 20);
+    cbar.Label.String = "P1 Firing Rates (spk/s)";
+    set(s, 'EdgeColor', 'none');
+    xlabel("Time (s)")
+    ylabel("Distance from Electrode (um)")
+    yticks(far_ticks)
+    title("Pulse Near Map")
     
     figure;
     s = pcolor(t_down, ball_rs(far_mask)*1e6, gs_down(:, far_mask)');
@@ -237,6 +327,7 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     ylabel("Distance from Electrode (um)")
     yticks(far_ticks)
     title("AGS Far")
+    %}
 end
 
 function neuron_frs = recspikes2neuron_frs(recspikes, win_size, avg_win_size, t, N)

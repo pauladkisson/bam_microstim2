@@ -7,7 +7,7 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     %Accuracy
     num_amps = length(stim_amps);
     stim_coeffs = zeros(num_amps, num_batch, 2);
-    c = -1:0.01:1;
+    c = -1:0.001:1;
     stim_ws = zeros(num_amps, num_batch, length(c));
     for j = 1:length(stim_amps)
         stim_amp = stim_amps(j);
@@ -50,11 +50,6 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
             anodic_coeffs = coeffs;
             anodic_nodec = percent_nodec;
         end
-        [nodec_trial, nodec_c] = find(~decisions);
-        % for nodec = 1:length(nodec_trial)
-            % fprintf("c=%0.3f, trial = %0.0f \n", ...
-            %    [stim_coherences(nodec_c(nodec)), nodec_trial(nodec)])
-        % end
         stim_coeffs(j, :, :) = batch_coeffs;
     end
     pulse_w = logistic_acc(pulse_coeffs, c);
@@ -83,27 +78,36 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     ylim([0, 1])
     
     %Statistics
-    a = reshape(stim_coeffs(:, 2:end, 1), [length(stim_amps), num_batch-1]);
-    b = reshape(stim_coeffs(:, 2:end, 2), [length(stim_amps), num_batch-1]);
+    a = reshape(stim_coeffs(:, :, 1), [length(stim_amps), num_batch]);
+    b = reshape(stim_coeffs(:, :, 2), [length(stim_amps), num_batch]);
     bias = -a ./ b;
-    sensitivity = b .* exp(-a) / (1 + exp(-a)).^2;
+    sensitivity = b ./ 4;
 
     avg_ps_bias = mean(bias(1, :))
     sem_ps_bias = std(bias(1, :)) ./ sqrt(num_batch)
     avg_gs_bias = mean(bias(2, :))
     sem_gs_bias = std(bias(2, :)) ./ sqrt(num_batch)
+    avg_ctrl_bias = mean(bias(3, :))
+    sem_ctrl_bias = std(bias(3, :)) ./ sqrt(num_batch)
     avg_an_bias = mean(bias(4, :))
     sem_an_bias = std(bias(4, :)) ./ sqrt(num_batch)
 
-    avg_ps_sens = mean(sensitivity(1, :))
-    sem_ps_sens = std(sensitivity(1, :))./ sqrt(num_batch)
-    avg_an_sens = mean(sensitivity(4, :))
-    sem_an_sens = std(sensitivity(4, :)) ./ sqrt(num_batch)
-    dc = c(2) - c(1);
-    center_c0 = abs(c - avg_an_bias) < dc/2;
-    center_c1 = abs(c - avg_an_bias + dc) < dc/2;
-    num_an_sens = (anodic_w(center_c1) - anodic_w(center_c0)) / dc
-    num_ctrl_sens = (control_w(c==dc) - control_w(c==0)) / dc
+    ps_sens = reshape(sensitivity(1, :), [num_batch, 1]);
+    gs_sens = reshape(sensitivity(2, :), [num_batch, 1]);
+    ctrl_sens = reshape(sensitivity(3, :), [num_batch, 1]);
+    an_sens = reshape(sensitivity(4, :), [num_batch, 1]);
+    mean_ctrl_sens = mean(ctrl_sens);
+    norm_ps_sens = ps_sens - mean_ctrl_sens;
+    norm_gs_sens = gs_sens - mean_ctrl_sens;
+    norm_an_sens = an_sens - mean_ctrl_sens;
+    
+    avg_norm_ps_sens = mean(norm_ps_sens)
+    avg_norm_gs_sens = mean(norm_gs_sens)
+    avg_norm_an_sens = mean(norm_an_sens)
+    sem_norm_ps_sens = std(norm_ps_sens) ./ sqrt(num_batch)
+    sem_norm_gs_sens = std(norm_gs_sens) ./ sqrt(num_batch)
+    sem_norm_an_sens = std(norm_an_sens) ./ sqrt(num_batch)
+
     
     %Decision Times
     for j = 1:length(stim_amps)

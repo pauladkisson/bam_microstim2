@@ -2,7 +2,7 @@
 %%% 9.6.21
 %%% Purpose: Calculate decision time and accuracy from population firing
 %%% rates
-sim_name = "Brainless_m=0_Con";
+sim_name = "iScience_Con";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 
@@ -18,15 +18,22 @@ num_trials = length(trials);
 %control_coherences = 0;
 %galvanic_coherences = 0;
 %pulse_coherences = 0;
-control_coherences = [-100, -51.2, -25.6, -12.8, -6.4, -3.2, 0, 3.2, 6.4, 12.8, 25.6, 51.2] / 100;
-pulse_coherences = [-100, -65, -60, -59, -58, -57, -56, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-galvanic_coherences = [-100, -65, -60, -59, -58, -57, -56, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
-anodic_coherences = fliplr([100, 65, 55, 51.2, 45, 40, 35, 32, 31, 30, 29, 28, 25.6, 12.8, 0]) / 100;
 
-pulse_amps = [-10*1e-6];
-%pulse_amps = [];
-dc_amps = [-1.4, 0, 1.4]*1e-6;
-%dc_amps = [0];
+control_coherences = [-100, -51.2, -25.6, -12.8, -6.4, -3.2, 0, 3.2, 6.4, 12.8, 25.6, 51.2] / 100;
+% pulse_coherences = [-100, -65, -60, -59, -58, -57, -56, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+% galvanic_coherences = [-100, -65, -60, -59, -58, -57, -56, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
+% anodic_coherences = fliplr([100, 65, 55, 51.2, 45, 40, 35, 32, 31, 30, 29, 28, 25.6, 12.8, 0]) / 100;
+
+pulse_coherences = [-100, -82.6, -69.8, -63.4, -60.2, -57, -53.8, -50.6, ...
+                    -44.2, -31.4, -5.8, 0, 43, 100] ./ 100;
+galvanic_coherences = [-100, -82.6, -69.8, -63.4, -60.2, -57, -53.8, -50.6, ...
+                       -44.2, -31.4, -5.8, 0, 43, 100] ./ 100;
+ anodic_coherences = fliplr([100, 81.2, 55.6, 42.8, 36.4, 33.2, 30, 26.8, ...
+                             23.6, 17.2, 4.4, 0, -21.2, -70, -100]) ./ 100;
+%pulse_amps = [-10*1e-6];
+pulse_amps = [];
+%dc_amps = [-1.4, 0, 1.4]*1e-6;
+dc_amps = [1.4]*1e-6;
 stim_amps = [pulse_amps, dc_amps];
 
 for j = 1:length(stim_amps)

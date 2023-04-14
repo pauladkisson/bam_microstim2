@@ -51,10 +51,10 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
             anodic_nodec = percent_nodec;
         end
         [nodec_trial, nodec_c] = find(~decisions);
-        for nodec = 1:length(nodec_trial)
-            fprintf("c=%0.3f, trial = %0.0f \n", ...
-                [stim_coherences(nodec_c(nodec)), nodec_trial(nodec)])
-        end
+        % for nodec = 1:length(nodec_trial)
+            % fprintf("c=%0.3f, trial = %0.0f \n", ...
+            %    [stim_coherences(nodec_c(nodec)), nodec_trial(nodec)])
+        % end
         stim_coeffs(j, :, :) = batch_coeffs;
     end
     pulse_w = logistic_acc(pulse_coeffs, c);
@@ -71,7 +71,7 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     errorbar(galvanic_coherences, galvanic_acc, galvanic_acc_sem, '.', ...
         'Color', default_colors(5, :), 'MarkerSize', 20)
     errorbar(anodic_coherences, anodic_acc, anodic_acc_sem, '.', ...
-        'Color', default_colors(6, :), 'MarkerSize', 20)
+         'Color', default_colors(6, :), 'MarkerSize', 20)
     plot(c, control_w, "k")
     plot(c, galvanic_w, 'Color', default_colors(5, :))
     plot(c, anodic_w, 'Color', default_colors(6, :))

@@ -11,8 +11,10 @@ tmax = 5; %ms
 I_el = -10; %uA
 phase_dur = 0.3; %ms
 tstart_ext = 1; %ms
-tflip_ext = tstart_ext + phase_dur; %ms
-tend_ext = tflip_ext + phase_dur; %ms
+%tflip_ext = tstart_ext + phase_dur; %ms
+%tend_ext = tflip_ext + phase_dur; %ms
+tflip_ext = tmax;
+tend_ext = tmax;
 tstart_int = 0; %ms
 tend_int = tmax;
 V0 = V_rest;
@@ -46,6 +48,13 @@ xlabel("Time (ms)")
 ylabel(["Membrane Polarization", "Relative to V_{rest} (mV)"])
 title(["-10uA External Current Step Response", "(1mm away)"])
 colorbar('Direction', 'reverse', 'Ticks', [lin_x(1), lin_x(end)]);
+
+%% Compute Time Constant
+membrane_pol = y(:, xidx(1), 1) - V_rest;
+max_v = max(membrane_pol);
+[~, tau_idx] = min(abs(membrane_pol - max_v*(1 - 1/exp(1)) ) )
+tau = t(tau_idx) - tstart_ext;
+fprintf("tau = %0.2f us \n", tau*1e3)
 
 
 %% Hard-coded Voltage Step in LIF

@@ -1,14 +1,13 @@
 %% Simulation Parameters
 clear;
-% sim_name = "iScience_Con";
-sim_name = "P1_Rec";
+sim_name = "iScience_Con";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
 default_colors = get(gca, "colororder");
 
 start_trial = 1;
-end_trial = 28;
+end_trial = 56;
 num_trials = end_trial - start_trial + 1;
 num_batch = 7;
 
@@ -118,14 +117,16 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, .
 % stim_duration offset is used to account for onset spike of pulse trains
 win_start = t_task + stim_duration;
 % omitting last 5ms of task period for exact comparison PR and FR
-win_stop = t_taskoff - 1/stim_freq + stim_duration;
+%win_stop = t_taskoff - 1/stim_freq + stim_duration;
+win_stop = t_task + stim_duration + 0.1;
 
 t_cut = 1.5; %omit trials with DTs longer than t_cut
-ex_c = [0, 0, 0, 0];
-%ex_c = [-55, -55, 0, 30]/100;
+%ex_c = [0, 0, 0, 0];
+ex_c = [-57, -57, 0, 30]/100;
 %  plot_name = 'ex_c' or  'ex_c_zoom' or 'p1_wins' or 'p1_loses'
-plot_name = "ex_c";
-sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];
+plot_name = "p1_loses";
+%sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];
+sim_names = ["iScience_Con"];
 plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...

@@ -115,10 +115,12 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, .
 
 %% Plot Firing Rate Distribution over distance from electrode
 % stim_duration offset is used to account for onset spike of pulse trains
-win_start = t_task + stim_duration;
+%win_start = t_task + stim_duration;
+win_start = t_taskoff - 1/stim_freq + stim_duration - 0.1;
+
 % omitting last 5ms of task period for exact comparison PR and FR
-%win_stop = t_taskoff - 1/stim_freq + stim_duration;
-win_stop = t_task + stim_duration + 0.1;
+win_stop = t_taskoff - 1/stim_freq + stim_duration;
+%win_stop = t_task + stim_duration + 0.1;
 
 t_cut = 1.5; %omit trials with DTs longer than t_cut
 %ex_c = [0, 0, 0, 0];

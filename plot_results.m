@@ -1,13 +1,14 @@
 %% Simulation Parameters
 clear;
-sim_name = "iScience_Con";
+% sim_name = "iScience_Con";
+sim_name = "P1_Rec";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 figure('visible', 'off');
 default_colors = get(gca, "colororder");
 
 start_trial = 1;
-end_trial = 56;
+end_trial = 28;
 num_trials = end_trial - start_trial + 1;
 num_batch = 7;
 
@@ -50,7 +51,7 @@ stim_amps = [pulse_amps, dc_amps];
 ex_c = 0/100;
 ex_trial = 19;
 ex_stim_j = 3;
-plot_name = "single_stim"; % 'single_stim' or 'subplot' or 'p1_only'
+plot_name = "p1_only"; % 'single_stim' or 'subplot' or 'p1_only'
 ylims = [];
 plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
                   t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, ylims, plot_name);
@@ -114,15 +115,17 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, .
                         anodic_coherences, start_trial, end_trial, num_trials, symmetric);
 
 %% Plot Firing Rate Distribution over distance from electrode
-win_start = t_taskoff - 0.1; %+ stim_ind*dt; % to account for onset spike of pulse
-win_stop = t_taskoff;
+% stim_duration offset is used to account for onset spike of pulse trains
+win_start = t_task + stim_duration;
+% omitting last 5ms of task period for exact comparison PR and FR
+win_stop = t_taskoff - 1/stim_freq + stim_duration;
+
 t_cut = 1.5; %omit trials with DTs longer than t_cut
-%ex_c = [0, 0, 0, 0];
-ex_c = [-55, -55, 0, 30]/100;
+ex_c = [0, 0, 0, 0];
+%ex_c = [-55, -55, 0, 30]/100;
 %  plot_name = 'ex_c' or  'ex_c_zoom' or 'p1_wins' or 'p1_loses'
-plot_name = "p1_wins";
-%sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];
-sim_names = ["Brainless_m=0_Con"];
+plot_name = "ex_c";
+sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];
 plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...

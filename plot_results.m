@@ -48,9 +48,9 @@ stim_amps = [pulse_amps, dc_amps];
 
 %% Plot Firing Rates
 ex_c = 0/100;
-ex_trial = 19;
+ex_trial = 11;
 ex_stim_j = 3;
-plot_name = "p1_only"; % 'single_stim' or 'subplot' or 'p1_only'
+plot_name = "single_stim"; % 'single_stim' or 'subplot' or 'p1_only'
 ylims = [];
 plot_frs(sim_name, pulse_amps, stim_amps, p, f, N, N_E, t, t_task,...
                   t_taskoff, default_colors, ex_stim_j, ex_c, ex_trial, ylims, plot_name);
@@ -116,17 +116,20 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, .
 %% Plot Firing Rate Distribution over distance from electrode
 % stim_duration offset is used to account for onset spike of pulse trains
 %win_start = t_task + stim_duration;
-win_start = t_taskoff - 1/stim_freq + stim_duration - 0.1;
+% win_start = t_taskoff - 1/stim_freq + stim_duration - 0.1;
 
 % omitting last 5ms of task period for exact comparison PR and FR
-win_stop = t_taskoff - 1/stim_freq + stim_duration;
+%win_stop = t_taskoff - 1/stim_freq + stim_duration;
 %win_stop = t_task + stim_duration + 0.1;
+
+win_start = 1.5;
+win_stop = 1.6;
 
 t_cut = 1.5; %omit trials with DTs longer than t_cut
 %ex_c = [0, 0, 0, 0];
 ex_c = [-57, -57, 0, 30]/100;
 %  plot_name = 'ex_c' or  'ex_c_zoom' or 'p1_wins' or 'p1_loses'
-plot_name = "p1_loses";
+plot_name = "p1_wins";
 %sim_names = ["Brainless_m=0_Discon", "P1_Int", "P1_Rec"];
 sim_names = ["iScience_Con"];
 plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, ...
@@ -140,18 +143,18 @@ plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
                 galvanic_coherences, control_coherences, anodic_coherences);
             
 %% Plot FR Trajectories
-ex_c = [-55, -55, 0, 30] ./ 100;
+ex_c = [-57, -57, 0, 30] ./ 100;
 t_cut = 1.5;
 start_thresh = 10;
 stop_thresh = 20;
-plot_name = "p1_wins"; %p1_wins or p1_loses
+plot_name = "p1_loses"; %p1_wins or p1_loses
 plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, ...
     ex_c, pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences, ...
     default_colors, start_trial, end_trial, num_trials, N, p, f, N_E, ...
     start_thresh, stop_thresh, plot_name)
 
 %% Plot FR Heatmaps
-ex_c = [-55, -55, 0, 30] ./ 100;
+ex_c = [-57, -57, 0, 30] ./ 100;
 t_cut = 2;
 plot_name = "p1_loses"; %p1_wins or p1_loses
 plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...

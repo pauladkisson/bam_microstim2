@@ -11,6 +11,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
         win_num = 2;
     end
     dt = t(2) - t(1);
+    num_group = floor(f*N_E);
     stim_frs = zeros(length(stim_amps), num_trials, length(t));
     aligned_t = dt-1:dt:1-dt;
     aligned_frs = zeros(length(stim_amps), num_trials, length(aligned_t));
@@ -61,12 +62,13 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
                 preidx = find(pop_frs(:, 1)>=start_thresh, 1);
                 postidx = find(pop_frs(:, 1)>=stop_thresh, 1);
                 slope_t = t(preidx:postidx);
-                slope = (stop_thresh-start_thresh) / (t(postidx)-t(preidx));
-                coeffs = [slope, pop_frs(preidx, 1) - slope*t(preidx)];
+                %slope = (stop_thresh-start_thresh) / (t(postidx)-t(preidx));
+                %coeffs = [slope, pop_frs(preidx, 1) - slope*t(preidx)];
+                coeffs = polyfit(slope_t, pop_frs(preidx:postidx, 1), 1);
                 stim_slopes(j, relative_trial) = coeffs(1);
                 
                 %plot to debug outliers
-                debug = slope > 100; 
+                debug = coeffs(1) > 100; 
                 if debug
                     figure;
                     slope_y = coeffs(2) + coeffs(1)*slope_t;
@@ -74,7 +76,6 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
                     plot(t, pop_frs(:, 1))
                     plot(slope_t, slope_y, "r--")
                     title(sprintf("j=%0.0f", j))
-                    %break
                 end                     
             end
         end
@@ -114,6 +115,27 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     norm_an = anodic_slopes - mean_ctrl;
     mean_slopes = [mean(norm_gs, 'omitnan'), mean(norm_an, 'omitnan'), mean(norm_ps, 'omitnan')];
     std_slopes = [std(norm_gs, [], 'omitnan'), std(norm_an, [], 'omitnan'), std(norm_ps, [], 'omitnan')];
+    stim_trials = [sum(~isnan(norm_gs)), sum(~isnan(norm_an)), sum(~isnan(norm_ps))];
+    
+    % Statistics
+    disp("SLOPES")
+    stim_slopes = [pulse_slopes, galvanic_slopes, control_slopes, anodic_slopes];
+    [~, ~, stats] = anova1(stim_slopes, [], 'off');
+    results = multcompare(stats, 'Display', 'off');
+    p_vals = results(:, end);
+    p_ps = p_vals(2);
+    p_gs = p_vals(4);
+    p_ags = p_vals(end);
+    fprintf([...
+        'CGS (p=%0.2f) increased the slope by %0.2f +/- %0.2f ', ...
+        'relative to control. \n'], ...
+        p_gs, mean_slopes(1), std_slopes(1)/sqrt(stim_trials(1)))
+    fprintf([...
+        'PS (p=%0.2f) and AGS (p=%0.2f) decreased the slope ', ...
+        'by %0.2f +/- %0.2f and %0.2f +/- %0.2f respectively ', ...
+        'relative to control. \n'], p_ps, p_ags, mean_slopes(3), ...
+         std_slopes(3)/sqrt(stim_trials(3)), mean_slopes(2), ...
+         std_slopes(2)/sqrt(stim_trials(2)))
     
     figure;
     set(gca, 'fontsize', 18)
@@ -154,6 +176,19 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     xticklabels(["Galvanic", "Anodic", "Pulsatile"])
     ylabel("Change in Maximum Firing Rate (spk/s)")
     title("Recurrent Excitation Metric: P1 Loses")
+    
+    % Statistics
+    disp("MAX FRS")
+    [~, p_ps_cgs] = ttest2(norm_ps, norm_gs);
+    fprintf([...
+        'Maximum P1 FR was increased by PS (%0.2f +/- %0.2f) and CGS ', ...
+        '(%0.2f +/- %0.2f) but decreased by AGS (%0.2f +/- %0.2f) ', ...
+        'relative to control. \n'], ...
+        mean_max_frs(3), std_max_frs(3)/sqrt(stim_trials(3)), ...
+        mean_max_frs(1), std_max_frs(1)/sqrt(stim_trials(1)), ...
+        mean_max_frs(2), std_max_frs(2)/sqrt(stim_trials(2)))
+    fprintf('PS and CGS induced statistically equivalent increases (p=%0.2f)', ...
+         p_ps_cgs)
     
     ps_aligned = reshape(aligned_frs(1, :, :), [num_trials, length(aligned_t)]);
     ps_aligned_mean = mean(ps_aligned, 1, 'omitnan');

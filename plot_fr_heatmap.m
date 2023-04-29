@@ -10,10 +10,15 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
         win_num = 2;
     end
     dt = t(2) - t(1);
-    stim_frs = zeros(length(stim_amps), num_trials, length(t), num_group);
-    stim_cvs = zeros(length(stim_amps), num_trials, length(t));
-    stim_skews = zeros(length(stim_amps), num_trials, length(t));
-    stim_kurts = zeros(length(stim_amps), num_trials, length(t));
+    win_size = 50e-3;
+    avg_win_size = 200e-3;
+    n_pts_per_bin = 4; %Number of time points per averaging window
+    down_factor = floor(avg_win_size/(n_pts_per_bin*dt));
+    t_down = t(1:down_factor:end);
+    stim_frs = zeros(length(stim_amps), num_trials, length(t_down), num_group);
+    stim_cvs = zeros(length(stim_amps), num_trials, length(t_down));
+    stim_skews = zeros(length(stim_amps), num_trials, length(t_down));
+    stim_kurts = zeros(length(stim_amps), num_trials, length(t_down));
     load(sprintf("Simulation %s/ustim/r.mat", sim_name), "ball_r");
     ball_rs = get_ball_rs(ball_r, num_affected, num_group);
     for j = 1:length(stim_amps)
@@ -54,34 +59,34 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
             end
             load(strcat(output_stimpath, sprintf("/c=%0.3f/trial%0.0f.mat", [c, trial])), ...
                    "recspikes")
-            win_size = 50e-3;
-            avg_win_size = 200e-3;
             neuron_frs = recspikes2neuron_frs(recspikes, win_size, avg_win_size, t, num_group);
+            % Downsample for appropriate time-frequency resolution
+            neuron_frs = neuron_frs(1:down_factor:end, :);
             stim_frs(j, trial, :, :) = neuron_frs;
             stim_cvs(j, trial, :) = std(neuron_frs, [], 2) ./ mean(neuron_frs, 2);
             stim_skews(j, trial, :) = skewness(neuron_frs, 0, 2); %flag = 0 to correct for sample bias
             stim_kurts(j, trial, :) = kurtosis(neuron_frs, 0, 2); %flag = 0 to correct for sample bias
         end
     end
-    ps_frs = reshape(mean(stim_frs(1, :, :, :), 2, 'omitnan'), [length(t), num_group]);
-    ps_cv = reshape(mean(stim_cvs(1, :, :), 2, 'omitnan'), [length(t), 1]);
-    ps_skew = reshape(mean(stim_skews(1, :, :), 2, 'omitnan'), [length(t), 1]);
-    ps_kurt = reshape(mean(stim_kurts(1, :, :), 2, 'omitnan'), [length(t), 1]);
+    ps_frs = reshape(mean(stim_frs(1, :, :, :), 2, 'omitnan'), [length(t_down), num_group]);
+    ps_cv = reshape(mean(stim_cvs(1, :, :), 2, 'omitnan'), [length(t_down), 1]);
+    ps_skew = reshape(mean(stim_skews(1, :, :), 2, 'omitnan'), [length(t_down), 1]);
+    ps_kurt = reshape(mean(stim_kurts(1, :, :), 2, 'omitnan'), [length(t_down), 1]);
     
-    gs_frs = reshape(mean(stim_frs(2, :, :, :), 2, 'omitnan'), [length(t), num_group]);
-    gs_cv = reshape(mean(stim_cvs(2, :, :), 2, 'omitnan'), [length(t), 1]);
-    gs_skew = reshape(mean(stim_skews(2, :, :), 2, 'omitnan'), [length(t), 1]);
-    gs_kurt = reshape(mean(stim_kurts(2, :, :), 2, 'omitnan'), [length(t), 1]);
+    gs_frs = reshape(mean(stim_frs(2, :, :, :), 2, 'omitnan'), [length(t_down), num_group]);
+    gs_cv = reshape(mean(stim_cvs(2, :, :), 2, 'omitnan'), [length(t_down), 1]);
+    gs_skew = reshape(mean(stim_skews(2, :, :), 2, 'omitnan'), [length(t_down), 1]);
+    gs_kurt = reshape(mean(stim_kurts(2, :, :), 2, 'omitnan'), [length(t_down), 1]);
     
-    ctrl_frs = reshape(mean(stim_frs(3, :, :, :), 2, 'omitnan'), [length(t), num_group]);
-    ctrl_cv = reshape(mean(stim_cvs(3, :, :), 2, 'omitnan'), [length(t), 1]);
-    ctrl_skew = reshape(mean(stim_skews(3, :, :), 2, 'omitnan'), [length(t), 1]);
-    ctrl_kurt = reshape(mean(stim_kurts(3, :, :), 2, 'omitnan'), [length(t), 1]);
+    ctrl_frs = reshape(mean(stim_frs(3, :, :, :), 2, 'omitnan'), [length(t_down), num_group]);
+    ctrl_cv = reshape(mean(stim_cvs(3, :, :), 2, 'omitnan'), [length(t_down), 1]);
+    ctrl_skew = reshape(mean(stim_skews(3, :, :), 2, 'omitnan'), [length(t_down), 1]);
+    ctrl_kurt = reshape(mean(stim_kurts(3, :, :), 2, 'omitnan'), [length(t_down), 1]);
     
-    an_frs = reshape(mean(stim_frs(4, :, :, :), 2, 'omitnan'), [length(t), num_group]);
-    an_cv = reshape(mean(stim_cvs(4, :, :), 2, 'omitnan'), [length(t), 1]);
-    an_skew = reshape(mean(stim_skews(4, :, :), 2, 'omitnan'), [length(t), 1]);
-    an_kurt = reshape(mean(stim_kurts(4, :, :), 2, 'omitnan'), [length(t), 1]);
+    an_frs = reshape(mean(stim_frs(4, :, :, :), 2, 'omitnan'), [length(t_down), num_group]);
+    an_cv = reshape(mean(stim_cvs(4, :, :), 2, 'omitnan'), [length(t_down), 1]);
+    an_skew = reshape(mean(stim_skews(4, :, :), 2, 'omitnan'), [length(t_down), 1]);
+    an_kurt = reshape(mean(stim_kurts(4, :, :), 2, 'omitnan'), [length(t_down), 1]);
     
     % Statistics
     stim_trials = [sum(~isnan(stim_frs(1, :, 1, 1))), ...
@@ -90,8 +95,8 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
                    sum(~isnan(stim_frs(4, :, 1, 1)))  ];
     stim_skew_ses = skew_se(stim_trials);
     stim_kurt_ses = kurt_se(stim_trials);
-    beginning_of_task = t>=1.1 & t<=1.2;
-    end_of_task = t>=2.9 & t<=3;
+    beginning_of_task = t_down>=1.1 & t_down<=1.2;
+    end_of_task = t_down>=2.9 & t_down<=3;
     
     ps_cv_start = mean(ps_cv(beginning_of_task));
     gs_cv_start = mean(gs_cv(beginning_of_task));
@@ -180,19 +185,18 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
         an_skew_end, stim_skew_ses(4), an_kurt_end, stim_kurt_ses(4), ...
         stim_trials(4))
     
-    
-    % Downsample for appropriate time-frequency resolution
-    n_pts_per_bin = 4; %Number of time points per averaging window
-    down_factor = floor(avg_win_size/(n_pts_per_bin*dt));
-    t_down = t(1:down_factor:end);
     ball_rs = ball_rs(1:num_affected);
-    ps_down = ps_frs(1:down_factor:end, 1:num_affected);
-    gs_down = gs_frs(1:down_factor:end, 1:num_affected);
-    ctrl_down = ctrl_frs(1:down_factor:end, 1:num_affected);
-    an_down = an_frs(1:down_factor:end, 1:num_affected);
+    ps_down = ps_frs(:, 1:num_affected);
+    gs_down = gs_frs(:, 1:num_affected);
+    ctrl_down = ctrl_frs(:, 1:num_affected);
+    an_down = an_frs(:, 1:num_affected);
     
     % shift data so it is discontinuous
-    low_fr_lim = 15;
+    if plot_name == "p1_wins"
+        low_fr_lim = 50;
+    else
+        low_fr_lim = 15;
+    end
     high_fr_lim = 200;
     frac_high = 1/3;
     ps_down(ps_down>=low_fr_lim) = low_fr_lim + (ps_down(ps_down>=low_fr_lim)-low_fr_lim) ./ ...
@@ -207,10 +211,10 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     xlims = [0.5, 3.5]; %omit first 0.5s to avoid 0FR artifact 
     figure;
     hold on
-    plot(t, ps_cv, 'Color', default_colors(7, :))
-    plot(t, gs_cv, 'Color', default_colors(5, :))
-    plot(t, an_cv, 'Color', default_colors(6, :))
-    plot(t, ctrl_cv, 'k-')
+    plot(t_down, ps_cv, 'Color', default_colors(7, :))
+    plot(t_down, gs_cv, 'Color', default_colors(5, :))
+    plot(t_down, an_cv, 'Color', default_colors(6, :))
+    plot(t_down, ctrl_cv, 'k-')
     legend(["PS", "CGS", "AGS", "No Stim"])
     xlabel("Time (s)")
     xlim(xlims)
@@ -220,10 +224,10 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     
     figure;
     hold on
-    plot(t, ps_skew, 'Color', default_colors(7, :))
-    plot(t, gs_skew, 'Color', default_colors(5, :))
-    plot(t, an_skew, 'Color', default_colors(6, :))
-    plot(t, ctrl_skew, 'k')
+    plot(t_down, ps_skew, 'Color', default_colors(7, :))
+    plot(t_down, gs_skew, 'Color', default_colors(5, :))
+    plot(t_down, an_skew, 'Color', default_colors(6, :))
+    plot(t_down, ctrl_skew, 'k')
     legend(["PS", "CGS", "AGS", "No Stim"])
     xlabel("Time (s)")
     xlim(xlims)
@@ -233,10 +237,10 @@ function plot_fr_heatmap(sim_name, pulse_amps, stim_amps, t, t_cut, ex_c, ...
     
     figure;
     hold on
-    plot(t, ps_kurt, 'Color', default_colors(7, : ))
-    plot(t, gs_kurt, 'Color', default_colors(5, :))
-    plot(t, an_kurt, 'Color', default_colors(6, :))
-    plot(t, ctrl_kurt, 'k')
+    plot(t_down, ps_kurt, 'Color', default_colors(7, : ))
+    plot(t_down, gs_kurt, 'Color', default_colors(5, :))
+    plot(t_down, an_kurt, 'Color', default_colors(6, :))
+    plot(t_down, ctrl_kurt, 'k')
     legend(["PS", "CGS", "AGS", "No Stim"])
     xlabel("Time (s)")
     xlim(xlims)

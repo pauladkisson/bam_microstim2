@@ -72,13 +72,13 @@ plot_rasters(sim_name, pulse_amps, stim_amps, ex_neurons, t, ...
 %% Plot Coefficeint of Variation (CV)
 win_size = floor(0.250 / dt); %250ms moving window
 cv_window = t >= 2.5 & t<3; %Plotting window
-t_cut = 1; %omit trials with DTs longer than t_cut
+t_cut = 1.5; %omit trials with DTs longer than t_cut
 ex_neuron = 7;
 ex_trial = 1;
 top_N = floor(1*num_group);
-ex_c = [-55, -55, 0, 35]/100;
+ex_c = [-57, -57, 0, 30]/100;
 plot_name = "p1_wins"; %ex_neuron or 'ex_trial' or 'p1_wins'
-sim_names = ["Brainless_m=0_Con", "Brainless_m=0_Discon"]; % [Connected, Disconnected]
+sim_names = ["iScience_Con", "iScience_Discon"]; % [Connected, Disconnected]
 plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, t_cut, N, top_N, num_group, ...
              num_affected, win_size, cv_window, default_colors, ex_c, ex_trial, ...
              ex_neuron, pulse_coherences, galvanic_coherences, control_coherences, ...
@@ -86,13 +86,13 @@ plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, t_cut, N, top_N, num_grou
 
 
 %% Plot Phaselocking to Pulses
-sim_names = ["Brainless_m=0_Con", "Brainless_m=0_Discon"]; % [Connected, Disconnected]
+sim_names = ["iScience_Con", "iScience_Discon"]; % [Connected, Disconnected]
 idx_diff = stim_ind+1;% how far off timing is from pulse timing + 1 to account for t(1) = 0
 win_start = 2.5;
 win_stop = 3;
 top_N = floor(1*num_group);
-ex_c = [-55, -55, 0, 35] / 100;
-t_cut = 1; %omit trials with DTs longer than t_cut
+ex_c = [-57, -57, 0, 30] / 100;
+t_cut = 2; %omit trials with DTs longer than t_cut
 plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, t_cut, stim_freq, ...
                         num_group, num_affected, top_N, win_start, win_stop, idx_diff, ...
                         default_colors, start_trial, end_trial, num_trials, ex_c, ...
@@ -104,7 +104,7 @@ N_end = floor(num_group);
 win_start = 2.5;
 win_stop = 3;
 c_win = 300*1e-6;
-ex_c = [-55, -55, 0, 35]/100;
+ex_c = [-57, -57, 0, 30]/100;
 sim_names = ["Brainless_m=0_Con", "Brainless_m=0_Discon"]; % [Connected, Disconnected]
 symmetric = true;
 t_cut = 1; %omit trials with DTs longer than t_cut

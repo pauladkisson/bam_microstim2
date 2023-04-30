@@ -11,6 +11,7 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
     figure(1);
     set(gca, 'Fontsize', 18)
     hold on
+    ps_sim_sync = zeros(length(sim_names), num_trials, num_group); 
     for sim_name = sim_names
         stim_sync = zeros(length(stim_amps), num_trials, num_group);
         load(sprintf("Simulation %s/ustim/r.mat", sim_name), "ball_r")
@@ -100,5 +101,31 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         xlabel("Distance from Electrode (um)")
         ylabel("Percent of Phaselocked Spikes (%)")
         ylim([0, 100])
+        
+        % Statistics
+        p_ps = ones(num_affected, 1);
+        for neuron = 1:num_affected
+            ps_sync = reshape(stim_sync(1, :, neuron), [num_trials, 1]);
+            ctrl_sync = reshape(stim_sync(3, :, neuron), [num_trials, 1]);
+            [~, p_ps(neuron)] = ttest2(ps_sync, ctrl_sync, 'Tail', 'right');
+        end
+        % Bonferroni correction
+        p_ps = p_ps * num_affected;
+        sig_thresh = 0.05;
+        ps_sig_dist = max(ball_rs(p_ps < sig_thresh));
+        fprintf("Simulation %s: PS Synchrony spread to %0.1fum \n", sim_name, ps_sig_dist*1e6)
+        ps_sim_sync(sim_name==sim_names, :, :) = pulse_sync;
     end
+    % Statistics
+    p_sim = ones(num_affected, 1);
+    for neuron = 1:num_affected
+        con_sync = reshape(ps_sim_sync(1, :, neuron), [num_trials, 1]);
+        discon_sync = reshape(ps_sim_sync(2, :, neuron), [num_trials, 1]);
+        [~, p_sim(neuron)] = ttest2(con_sync, discon_sync);
+    end
+    % Bonferroni correction
+    p_sim = p_sim * num_affected;
+    sig_thresh = 0.05;
+    fprintf("Neurons with significantly different synchrony: %0.1f \n", ...
+            ball_rs(p_sim<sig_thresh)*1e6)
 end

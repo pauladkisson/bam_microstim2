@@ -5,6 +5,8 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_af
                         N_start, N_end, win_start, win_stop, c_win, ex_c, ...
                         pulse_coherences, galvanic_coherences, control_coherences, ...
                         anodic_coherences, start_trial, end_trial, num_trials, symmetric)
+    num_group = N_end - N_start + 1;
+    sim_sync = zeros(length(sim_names), length(stim_amps), num_trials, num_group, num_group);
     for sim_name = sim_names
         disp(sim_name)
         
@@ -14,6 +16,7 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_af
             stim_amp = stim_amps(j);
             pulse = j<=length(pulse_amps);
             if pulse
+                disp("Pulse")
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_pulse", ...
                     [sim_name, stim_amp*1e6]);
                 stim_coherences = pulse_coherences;
@@ -21,10 +24,13 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_af
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                     [sim_name, stim_amp*1e6]);
                 if stim_amp < 0 %cathodic GS
+                    disp("Cathodic GS")
                     stim_coherences = galvanic_coherences;
                 elseif stim_amp == 0
+                    disp("Control")
                     stim_coherences = control_coherences;
                 else %anodic GS
+                    disp("Anodic GS")
                     stim_coherences = anodic_coherences;
                 end
             end
@@ -111,5 +117,29 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_af
         cb = axs.Colorbar;
         cb.Ticks = ticks;
         cb.TickLabels = tick_labels;
+        
+        sim_sync(sim_names==sim_name, :, :, :, :) = stim_sync;
     end
+    
+    % Statistics
+    popmean_sync = mean(sim_sync, [4, 5], 'omitnan');
+    popmean_sync = permute(popmean_sync, [1, 3, 2]);
+    con_sync = reshape(popmean_sync(1, :, :), [num_trials*length(stim_amps), 1]);
+    discon_sync = reshape(popmean_sync(2, :, :), [num_trials*length(stim_amps), 1]);
+    flat_sync = [con_sync; discon_sync];
+    is_connected = zeros(length(flat_sync), 1);
+    is_connected(1:length(con_sync)) = 1;
+    stim_type = zeros(length(con_sync), 1);
+    for j = 1:length(stim_amps)
+        stim_type((j-1)*num_trials+1:j*num_trials) = j;
+    end
+    stim_types = [stim_type; stim_type];
+    [~, ~, stats] = anovan(flat_sync, {stim_types, is_connected});
+    c = multcompare(stats);
+    fprintf([...
+        'CGS did not induce significant synchrony compared to control ', ...
+        '(p=%0.2f)'], c(4, end));
+    fprintf([...
+        'AGS induced a mild de-synchronizing effect compared to control ', ...
+        '(p=%0.1e)'], c(end, end));
 end

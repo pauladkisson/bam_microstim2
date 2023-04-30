@@ -72,7 +72,7 @@ plot_rasters(sim_name, pulse_amps, stim_amps, ex_neurons, t, ...
 %% Plot Coefficeint of Variation (CV)
 win_size = floor(0.250 / dt); %250ms moving window
 cv_window = t >= 2.5 & t<3; %Plotting window
-t_cut = 1.5; %omit trials with DTs longer than t_cut
+t_cut = 2; %omit trials with DTs longer than t_cut
 ex_neuron = 7;
 ex_trial = 1;
 top_N = floor(1*num_group);
@@ -100,14 +100,14 @@ plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, t_cut, st
 
 %% Plot Synchrony
 N_start = 1;
-N_end = floor(num_group);
+N_end = num_affected;
 win_start = 2.5;
 win_stop = 3;
 c_win = 300*1e-6;
 ex_c = [-57, -57, 0, 30]/100;
-sim_names = ["Brainless_m=0_Con", "Brainless_m=0_Discon"]; % [Connected, Disconnected]
+sim_names = ["iScience_Con", "iScience_Discon"]; % [Connected, Disconnected]
 symmetric = true;
-t_cut = 1; %omit trials with DTs longer than t_cut
+t_cut = 2; %omit trials with DTs longer than t_cut
 plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, ...
                         N_start, N_end, win_start, win_stop, c_win, ex_c, ...
                         pulse_coherences, galvanic_coherences, control_coherences, ...

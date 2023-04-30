@@ -19,6 +19,7 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
             pulse = j<=length(pulse_amps);
             c = ex_c(j);
             if pulse
+                disp("Pulse")
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_pulse", ...
                     [sim_name, stim_amp*1e6]);
                 stim_coherences = pulse_coherences;
@@ -26,10 +27,13 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
                 output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                     [sim_name, stim_amp*1e6]);
                 if stim_amp < 0 %cathodic GS
+                    disp("Cathodic GS")
                    stim_coherences = galvanic_coherences;
                 elseif stim_amp == 0
+                    disp("Control")
                     stim_coherences = control_coherences;
                 else %anodic GS
+                    disp("Anodic GS")
                     stim_coherences = anodic_coherences;
                 end
             end

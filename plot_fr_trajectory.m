@@ -62,13 +62,13 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
                 preidx = find(pop_frs(:, 1)>=start_thresh, 1);
                 postidx = find(pop_frs(:, 1)>=stop_thresh, 1);
                 slope_t = t(preidx:postidx);
-                %slope = (stop_thresh-start_thresh) / (t(postidx)-t(preidx));
-                %coeffs = [slope, pop_frs(preidx, 1) - slope*t(preidx)];
-                coeffs = polyfit(slope_t, pop_frs(preidx:postidx, 1), 1);
+                slope = (stop_thresh-start_thresh) / (t(postidx)-t(preidx));
+                coeffs = [slope, pop_frs(preidx, 1) - slope*t(preidx)];
+                %coeffs = polyfit(slope_t, pop_frs(preidx:postidx, 1), 1);
                 stim_slopes(j, relative_trial) = coeffs(1);
                 
                 %plot to debug outliers
-                debug = coeffs(1) > 100; 
+                debug = coeffs(1) > 100 | coeffs(1) < 30;
                 if debug
                     figure;
                     slope_y = coeffs(2) + coeffs(1)*slope_t;
@@ -143,7 +143,6 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     b = bar(mean_slopes);
     b.FaceColor = 'flat';
     b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
-    %b.CData = [default_colors(7, :); default_colors(5, :); [0, 0, 0]; default_colors(6, :)];
     x = [1, 2, 3];
     errorbar(x, mean_slopes, std_slopes, 'k.', 'Linewidth', 20, 'Capsize', 0)
     hold off
@@ -151,6 +150,21 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     xticklabels(["Galvanic", "Anodic", "Pulsatile"])
     ylabel("Change in Firing Rate Slope (spk/s^2)")
     title("Recurrent Excitation Metric")
+    
+    % Boxplot
+    figure;
+    set(gca, 'fontsize', 18)
+    hold on
+    boxplot([pulse_slopes, galvanic_slopes, control_slopes, anodic_slopes])
+    hold off
+    xticks([1, 2, 3, 4])
+    xticklabels(["Pulsatile", "Galvanic", "Control", "Anodic"])
+    ylabel("Change in Firing Rate Slope (spk/s^2)")
+    title("Recurrent Excitation Metric: Boxplot")
+    p_gs_ctrl_median = ranksum(galvanic_slopes, control_slopes);
+    p_gs_ps_median = ranksum(galvanic_slopes, pulse_slopes);
+    fprintf("CGS has a higher median slope than control (p=%0.1e). \n", p_gs_ctrl_median)
+    fprintf("CGS has a higher median slope than pulse (p=%0.1e). \n", p_gs_ps_median)
     
     pulse_max_frs = max(pulse_frs, [], 2);
     galvanic_max_frs = max(galvanic_frs, [], 2);
@@ -187,7 +201,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
         mean_max_frs(3), std_max_frs(3)/sqrt(stim_trials(3)), ...
         mean_max_frs(1), std_max_frs(1)/sqrt(stim_trials(1)), ...
         mean_max_frs(2), std_max_frs(2)/sqrt(stim_trials(2)))
-    fprintf('PS and CGS induced statistically equivalent increases (p=%0.2f)', ...
+    fprintf('PS and CGS induced statistically equivalent increases (p=%0.2f). \n', ...
          p_ps_cgs)
     
     ps_aligned = reshape(aligned_frs(1, :, :), [num_trials, length(aligned_t)]);

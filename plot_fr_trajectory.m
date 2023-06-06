@@ -72,6 +72,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
                 if debug
                     figure;
                     slope_y = coeffs(2) + coeffs(1)*slope_t;
+                    slope_y = slope_y - (slope_y(2) - slope_y(1))/2; %center
                     hold on;
                     plot(t, pop_frs(:, 1))
                     plot(slope_t, slope_y, "r--")
@@ -105,6 +106,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
         title("P1 Loses")
     end
     
+    % Slope around decision threshold
     pulse_slopes = reshape(stim_slopes(1, :, :), [num_trials, 1]);
     galvanic_slopes = reshape(stim_slopes(2, :, :), [num_trials, 1]);
     control_slopes = reshape(stim_slopes(3, :, :), [num_trials, 1]);
@@ -112,60 +114,55 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     mean_ctrl = mean(control_slopes, 'omitnan');
     norm_ps = pulse_slopes - mean_ctrl;
     norm_gs = galvanic_slopes - mean_ctrl;
+    norm_ctrl = control_slopes - mean_ctrl;
     norm_an = anodic_slopes - mean_ctrl;
-    mean_slopes = [mean(norm_gs, 'omitnan'), mean(norm_an, 'omitnan'), mean(norm_ps, 'omitnan')];
-    std_slopes = [std(norm_gs, [], 'omitnan'), std(norm_an, [], 'omitnan'), std(norm_ps, [], 'omitnan')];
-    stim_trials = [sum(~isnan(norm_gs)), sum(~isnan(norm_an)), sum(~isnan(norm_ps))];
+    ps_quantiles = quantile(norm_ps, [0.25, 0.5, 0.75]);
+    gs_quantiles = quantile(norm_gs, [0.25, 0.5, 0.75]);
+    an_quantiles = quantile(norm_an, [0.25, 0.5, 0.75]);
+    ctrl_quantiles = quantile(norm_ctrl, [0.25, 0.5, 0.75]);
+    
+    figure;
+    set(gca, 'fontsize', 18)
+    hold on
+    colors = [default_colors(5, :); default_colors(6, :); default_colors(7, :); [0, 0, 0]];
+    boxplot([norm_gs, norm_an, norm_ps, norm_ctrl], 'PlotStyle', 'traditional', ...
+        'Colors', colors, 'Symbol', ".")
+    hold off
+    xticks([1, 2, 3, 4])
+    xticklabels(["Galvanic", "Anodic", "Pulsatile", "Control"])
+    ylabel("Change in Firing Rate Slope (spk/s^2)")
+    title("Recurrent Excitation Metric: P1 Wins")
     
     % Statistics
     disp("SLOPES")
-    stim_slopes = [pulse_slopes, galvanic_slopes, control_slopes, anodic_slopes];
-    [~, ~, stats] = anova1(stim_slopes, [], 'off');
-    results = multcompare(stats, 'Display', 'off');
-    p_vals = results(:, end);
-    p_ps = p_vals(2);
-    p_gs = p_vals(4);
-    p_ags = p_vals(end);
+    [p_median, ~, stats] = kruskalwallis([norm_ps, norm_gs, norm_ctrl, norm_an]);
     fprintf([...
-        'CGS (p=%0.2f) increased the slope by %0.2f +/- %0.2f ', ...
-        'relative to control. \n'], ...
-        p_gs, mean_slopes(1), std_slopes(1)/sqrt(stim_trials(1)))
+        "Stimulation induces significantly different median slopes (p=%0.1e). \n"], ...
+        p_median)
+    c = multcompare(stats);
+    p_ps_cgs_median = c(1, end);
+    p_cgs_ctrl_median = c(4, end);
+    p_ps_ctrl_median = c(2, end);
     fprintf([...
-        'PS (p=%0.2f) and AGS (p=%0.2f) decreased the slope ', ...
-        'by %0.2f +/- %0.2f and %0.2f +/- %0.2f respectively ', ...
-        'relative to control. \n'], p_ps, p_ags, mean_slopes(3), ...
-         std_slopes(3)/sqrt(stim_trials(3)), mean_slopes(2), ...
-         std_slopes(2)/sqrt(stim_trials(2)))
-    
-    figure;
-    set(gca, 'fontsize', 18)
-    hold on
-    b = bar(mean_slopes);
-    b.FaceColor = 'flat';
-    b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
-    x = [1, 2, 3];
-    errorbar(x, mean_slopes, std_slopes, 'k.', 'Linewidth', 20, 'Capsize', 0)
-    hold off
-    xticks([1, 2, 3])
-    xticklabels(["Galvanic", "Anodic", "Pulsatile"])
-    ylabel("Change in Firing Rate Slope (spk/s^2)")
-    title("Recurrent Excitation Metric")
-    
-    % Boxplot
-    figure;
-    set(gca, 'fontsize', 18)
-    hold on
-    boxplot([pulse_slopes, galvanic_slopes, control_slopes, anodic_slopes])
-    hold off
-    xticks([1, 2, 3, 4])
-    xticklabels(["Pulsatile", "Galvanic", "Control", "Anodic"])
-    ylabel("Change in Firing Rate Slope (spk/s^2)")
-    title("Recurrent Excitation Metric: Boxplot")
-    p_gs_ctrl_median = ranksum(galvanic_slopes, control_slopes);
-    p_gs_ps_median = ranksum(galvanic_slopes, pulse_slopes);
-    fprintf("CGS has a higher median slope than control (p=%0.1e). \n", p_gs_ctrl_median)
-    fprintf("CGS has a higher median slope than pulse (p=%0.1e). \n", p_gs_ps_median)
-    
+        'CGS (%0.2f, %0.2f, %0.2f) has a higher median slope than ', ...
+        'control (%0.2f, %0.2f, %0.2f) (p=%0.2f). \n'], ...
+        gs_quantiles(1), gs_quantiles(2), gs_quantiles(3), ...
+        ctrl_quantiles(1), ctrl_quantiles(2), ctrl_quantiles(3), ...
+        p_cgs_ctrl_median)
+    fprintf([...
+        'CGS (%0.2f, %0.2f, %0.2f) has a higher median slope than ', ...
+        'pulse (%0.2f, %0.2f, %0.2f) (p=%0.2f). \n'], ...
+        gs_quantiles(1), gs_quantiles(2), gs_quantiles(3), ...
+        ps_quantiles(1), ps_quantiles(2), ps_quantiles(3), ...
+        p_ps_cgs_median)
+    fprintf([...
+        'PS (%0.2f, %0.2f, %0.2f) has a lower median slope than ', ...
+        'control (%0.2f, %0.2f, %0.2f) (p=%0.2f). \n'], ...
+        ps_quantiles(1), ps_quantiles(2), ps_quantiles(3), ...
+        ctrl_quantiles(1), ctrl_quantiles(2), ctrl_quantiles(3), ...
+        p_ps_ctrl_median)
+       
+    % Max FRS
     pulse_max_frs = max(pulse_frs, [], 2);
     galvanic_max_frs = max(galvanic_frs, [], 2);
     control_max_frs = max(control_frs, [], 2);
@@ -174,54 +171,51 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     norm_ps = pulse_max_frs - mean_ctrl;
     norm_gs = galvanic_max_frs - mean_ctrl;
     norm_an = anodic_max_frs - mean_ctrl;
-    mean_max_frs = [mean(norm_gs, 'omitnan'), mean(norm_an, 'omitnan'), mean(norm_ps, 'omitnan')];
-    std_max_frs = [std(norm_gs, [], 'omitnan'), std(norm_an, [], 'omitnan'), std(norm_ps, [], 'omitnan')];
+    norm_ctrl = control_max_frs - mean_ctrl;
+    ps_quantiles = quantile(norm_ps, [0.25, 0.5, 0.75]);
+    gs_quantiles = quantile(norm_gs, [0.25, 0.5, 0.75]);
+    an_quantiles = quantile(norm_an, [0.25, 0.5, 0.75]);
+    ctrl_quantiles = quantile(norm_ctrl, [0.25, 0.5, 0.75]);
     
     figure;
     set(gca, 'fontsize', 18)
     hold on
-    b = bar(mean_max_frs);
-    b.FaceColor = 'flat';
-    b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
-    x = [1, 2, 3];
-    errorbar(x, mean_max_frs, std_max_frs, 'k.', 'Linewidth', 20, 'Capsize', 0)
+    boxplot([norm_gs, norm_an, norm_ps, norm_ctrl], 'PlotStyle', 'traditional', ...
+        'Colors', colors, 'Symbol', ".")
     hold off
-    xticks([1, 2, 3])
-    xticklabels(["Galvanic", "Anodic", "Pulsatile"])
+    xticks([1, 2, 3, 4])
+    xticklabels(["Galvanic", "Anodic", "Pulsatile", "Control"])
+    ylim([-5, 25])
     ylabel("Change in Maximum Firing Rate (spk/s)")
     title("Recurrent Excitation Metric: P1 Loses")
     
     % Statistics
-    disp("MAX FRS")
-    [~, p_ps_cgs] = ttest2(norm_ps, norm_gs);
+    [p_median, ~, stats] = kruskalwallis([norm_ps, norm_gs, norm_ctrl, norm_an]);
     fprintf([...
-        'Maximum P1 FR was increased by PS (%0.2f +/- %0.2f) and CGS ', ...
-        '(%0.2f +/- %0.2f) but decreased by AGS (%0.2f +/- %0.2f) ', ...
-        'relative to control. \n'], ...
-        mean_max_frs(3), std_max_frs(3)/sqrt(stim_trials(3)), ...
-        mean_max_frs(1), std_max_frs(1)/sqrt(stim_trials(1)), ...
-        mean_max_frs(2), std_max_frs(2)/sqrt(stim_trials(2)))
-    fprintf('PS and CGS induced statistically equivalent increases (p=%0.2f). \n', ...
-         p_ps_cgs)
-    
-    ps_aligned = reshape(aligned_frs(1, :, :), [num_trials, length(aligned_t)]);
-    ps_aligned_mean = mean(ps_aligned, 1, 'omitnan');
-    gs_aligned = reshape(aligned_frs(2, :, :), [num_trials, length(aligned_t)]);
-    gs_aligned_mean = mean(gs_aligned, 1, 'omitnan');
-    ctrl_aligned = reshape(aligned_frs(3, :, :), [num_trials, length(aligned_t)]);
-    ctrl_aligned_mean = mean(ctrl_aligned, 1, 'omitnan');
-    an_aligned = reshape(aligned_frs(4, :, :), [num_trials, length(aligned_t)]);
-    an_aligned_mean = mean(an_aligned, 1, 'omitnan');
-    
-    figure;
-    hold on
-    plot(aligned_t, ps_aligned, 'Color', default_colors(7, :))
-    plot(aligned_t, ps_aligned_mean, 'Color', default_colors(7, :), 'Linewidth', 2)
-    plot(aligned_t, gs_aligned, 'Color', default_colors(5, :))
-    plot(aligned_t, gs_aligned_mean, 'Color', default_colors(5, :), 'Linewidth', 2)
-    plot(aligned_t, an_aligned, 'Color', default_colors(6, :))
-    plot(aligned_t, an_aligned_mean, 'Color', default_colors(6, :), 'Linewidth', 2)
-    plot(aligned_t, ctrl_aligned, 'k-')
-    plot(aligned_t, ctrl_aligned_mean, 'k-', 'Linewidth', 2)
-    hold off
+        'Stimulation induces significantly different median Max FR (p=%0.1e). \n'], ...
+        p_median)
+    c = multcompare(stats);
+    p_ps_cgs_median = c(1, end);
+    p_cgs_ctrl_median = c(4, end);
+    p_ags_ctrl_median = c(6, end);
+    p_ps_ctrl_median = c(2, end);
+    fprintf([...
+        'CGS (%0.2f, %0.2f, %0.2f) has a higher median maximum FR than ', ...
+        'control (%0.2f, %0.2f, %0.2f) (p=%0.1e). \n'], ...
+        gs_quantiles(1), gs_quantiles(2), gs_quantiles(3), ...
+        ctrl_quantiles(1), ctrl_quantiles(2), ctrl_quantiles(3), ...
+        p_cgs_ctrl_median)
+    fprintf([...
+        'PS (%0.2f, %0.2f, %0.2f) has a higher median maximum FR than ', ...
+        'control (%0.2f, %0.2f, %0.2f) (p=%0.1e). \n'], ...
+        ps_quantiles(1), ps_quantiles(2), ps_quantiles(3), ...
+        ctrl_quantiles(1), ctrl_quantiles(2), ctrl_quantiles(3), ...
+        p_ps_ctrl_median)
+    fprintf([...
+        'AGS (%0.2f, %0.2f, %0.2f) has a lower median maximum FR than ', ...
+        'control (%0.2f, %0.2f, %0.2f) (p=%0.1e). \n'], ...
+        an_quantiles(1), an_quantiles(2), an_quantiles(3), ...
+        ctrl_quantiles(1), ctrl_quantiles(2), ctrl_quantiles(3), ...
+        p_ags_ctrl_median)
+    fprintf('PS and CGS have equivalent median maximum FRs (p=%0.2f). \n', p_ps_cgs_median)
 end

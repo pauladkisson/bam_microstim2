@@ -7,7 +7,7 @@ figure('visible', 'off');
 default_colors = get(gca, "colororder");
 
 start_trial = 1;
-end_trial = 10;
+end_trial = 100;
 num_trials = end_trial - start_trial + 1;
 num_batch = 3;
 
@@ -144,10 +144,10 @@ plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
             
 %% Plot FR Trajectories
 ex_c = [-57, -57, 0, 30] ./ 100;
-t_cut = 1.75;
+t_cut = 1.5;
 start_thresh = 10;
-stop_thresh = 25;
-plot_name = "p1_wins"; %p1_wins or p1_loses
+stop_thresh = 20;
+plot_name = "p1_loses"; %p1_wins or p1_loses
 plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, ...
     ex_c, pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences, ...
     default_colors, start_trial, end_trial, num_trials, N, p, f, N_E, ...

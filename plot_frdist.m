@@ -163,47 +163,84 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         popmean_galvanic = reshape(mean(stim_frs(2, :, :), 3, 'omitnan'), [num_trials, 1]);
         popmean_ctrl = reshape(mean(stim_frs(3, :, :), 3, 'omitnan'), [num_trials, 1]);
         popmean_anodic = reshape(mean(stim_frs(4, :, :), 3, 'omitnan'), [num_trials, 1]);
-        norm_pulse = popmean_pulse - popmean_ctrl;
-        norm_galvanic = popmean_galvanic - popmean_ctrl;
-        norm_anodic = popmean_anodic - popmean_ctrl;
-        stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_anodic, 'omitnan'), ...
-                      mean(norm_pulse, 'omitnan')];
-        stim_stds = [std(norm_galvanic, [], 'omitnan'), std(norm_anodic, [], 'omitnan'), ...
-                     std(norm_pulse, [], 'omitnan')];
-        stim_trials = [sum(~isnan(norm_galvanic)), sum(~isnan(norm_anodic)), ...
-                       sum(~isnan(norm_pulse))];
+        mean_ctrl = mean(popmean_ctrl);
+        norm_pulse = popmean_pulse - mean_ctrl;
+        norm_galvanic = popmean_galvanic - mean_ctrl;
+        norm_anodic = popmean_anodic - mean_ctrl;
+        norm_control = popmean_ctrl - mean_ctrl;
+        ps_quantiles = quantile(norm_pulse, [0.25, 0.5, 0.75]);
+        cgs_quantiles = quantile(norm_galvanic, [0.25, 0.5, 0.75]);
+        ags_quantiles = quantile(norm_anodic, [0.25, 0.5, 0.75]);
+        ctrl_quantiles = quantile(norm_control, [0.25, 0.5, 0.75]);
+        
+%         stim_means = [mean(norm_galvanic, 'omitnan'), mean(norm_anodic, 'omitnan'), ...
+%                       mean(norm_pulse, 'omitnan')];
+%         stim_stds = [std(norm_galvanic, [], 'omitnan'), std(norm_anodic, [], 'omitnan'), ...
+%                      std(norm_pulse, [], 'omitnan')];
+%         stim_trials = [sum(~isnan(norm_galvanic)), sum(~isnan(norm_anodic)), ...
+%                        sum(~isnan(norm_pulse))];
+%         figure;
+%         set(gca, 'fontsize', 18)
+%         hold on
+%         b = bar(stim_means, 1);
+%         b.FaceColor = 'flat';
+%         b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
+%         x = [1, 2, 3];
+%         errorbar(x, stim_means, stim_stds, 'k.', 'Linewidth', 20, 'Capsize', 0)
+%         hold off
+%         xticks([1, 2, 3])
+%         xticklabels(["Galvanic", "Anodic", "Pulsatile"])
+%         ylabel("Change in Firing Rate (spk/s)")
+%         %ylim([-4, 4])
+%         title(sim_name)
         figure;
         set(gca, 'fontsize', 18)
         hold on
-        b = bar(stim_means, 1);
-        b.FaceColor = 'flat';
-        b.CData = [default_colors(5, :); default_colors(6, :); default_colors(7, :)];
-        x = [1, 2, 3];
-        errorbar(x, stim_means, stim_stds, 'k.', 'Linewidth', 20, 'Capsize', 0)
+        colors = [default_colors(5, :); default_colors(6, :); default_colors(7, :); [0, 0, 0]];
+        boxplot([norm_galvanic, norm_anodic, norm_pulse, norm_control], 'PlotStyle', 'traditional', ...
+            'Colors', colors, 'Symbol', ".")
         hold off
-        xticks([1, 2, 3])
-        xticklabels(["Galvanic", "Anodic", "Pulsatile"])
+        xticks([1, 2, 3, 4])
+        xticklabels(["Galvanic", "Anodic", "Pulsatile", "Control"])
         ylabel("Change in Firing Rate (spk/s)")
-        %ylim([-4, 4])
+        ylim([-6, 6])
         title(sim_name)
         
         %Statistics
         disp("POPULATION AVERAGES")
-        [~, p_cgs_ags] = ttest2(abs(norm_galvanic), abs(norm_anodic));
-        [~, p_ps_cgs] = ttest2(norm_pulse, norm_galvanic);
         sim_pulse(sim_names==sim_name, :) = norm_pulse;
         sim_galvanic(sim_names==sim_name, :) = norm_galvanic;
         sim_anodic(sim_names==sim_name, :) = norm_anodic;
+%         [~, p_cgs_ags] = ttest2(abs(norm_galvanic), abs(norm_anodic));
+%         [~, p_ps_cgs] = ttest2(norm_pulse, norm_galvanic);
+%         fprintf([...
+%             'AGS induced a different average change in FR (%0.2f +/- %0.2fspk/s)', ...
+%             ' than CGS (%0.2f +/- %0.3fspk/s), p=%0.1e. \n'], stim_means(2), ...
+%             stim_stds(2)/sqrt(stim_trials(2)), stim_means(1), ...
+%             stim_stds(1)/sqrt(stim_trials(1)), p_cgs_ags)
+%         fprintf([...
+%             'PS induced a different average change in FR (%0.2f +/- %0.2fspk/s)', ...
+%             ' than CGS (%0.2f +/- %0.3fspk/s), p=%0.1e. \n'], stim_means(3), ...
+%             stim_stds(3)/sqrt(stim_trials(3)), stim_means(1), ...
+%             stim_stds(1)/sqrt(stim_trials(1)), p_ps_cgs)
+        [p_median, ~, stats] = kruskalwallis([norm_pulse, norm_galvanic, ...
+                                              norm_control, norm_anodic]);
         fprintf([...
-            'AGS induced a different average change in FR (%0.2f +/- %0.2fspk/s)', ...
-            ' than CGS (%0.2f +/- %0.3fspk/s), p=%0.1e. \n'], stim_means(2), ...
-            stim_stds(2)/sqrt(stim_trials(2)), stim_means(1), ...
-            stim_stds(1)/sqrt(stim_trials(1)), p_cgs_ags)
+            "Stimulation induces significantly different firing rates (p=%0.1e). \n"], ...
+            p_median)
+        c = multcompare(stats);
+        p_ps_cgs = c(1, end);
+        p_cgs_ags = ranksum(abs(norm_galvanic), abs(norm_anodic));
+        fprintf([...
+            'AGS induced a different average change in FR (%0.2f, %0.2f, %0.2f)', ...
+            ' than CGS (%0.2f, %0.2f, %0.2f), p=%0.1e. \n'], ...
+            ags_quantiles(1), ags_quantiles(2), ags_quantiles(3), ...
+            cgs_quantiles(1), cgs_quantiles(2), cgs_quantiles(3), p_cgs_ags)
         fprintf([...
             'PS induced a different average change in FR (%0.2f +/- %0.2fspk/s)', ...
-            ' than CGS (%0.2f +/- %0.3fspk/s), p=%0.1e. \n'], stim_means(3), ...
-            stim_stds(3)/sqrt(stim_trials(3)), stim_means(1), ...
-            stim_stds(1)/sqrt(stim_trials(1)), p_ps_cgs)
+            ' than CGS (%0.2f +/- %0.3fspk/s), p=%0.1e. \n'],  ...
+            ps_quantiles(1), ps_quantiles(2), ps_quantiles(3), ...
+            cgs_quantiles(1), cgs_quantiles(2), cgs_quantiles(3), p_ps_cgs)
         
         %Unaffected P1
         popmean_pulse = reshape(mean(stim_frs(1, :, num_affected+1:end), 3, 'omitnan'), [num_trials, 1]);
@@ -261,11 +298,11 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
     if length(sim_names) == 3 % discon, p1_int, p1_rec 
         disp(" ")
         disp("SIMULATION-WISE")
-        [~, p_ps_discon_inh] = ttest2(sim_pulse(1, :), sim_pulse(2, :));
-        [~, p_gs_discon_inh] = ttest2(sim_galvanic(1, :), sim_galvanic(2, :));
-        [~, p_ps_discon_rec] = ttest2(sim_pulse(1, :), sim_pulse(3, :));
-        [~, p_gs_discon_rec] = ttest2(sim_galvanic(1, :), sim_galvanic(3, :));
-        [~, p_an_discon_rec] = ttest2(sim_anodic(1, :), sim_anodic(3, :));
+        p_ps_discon_inh = ranksum(sim_pulse(1, :), sim_pulse(2, :));
+        p_gs_discon_inh = ranksum(sim_galvanic(1, :), sim_galvanic(2, :));
+        p_ps_discon_rec = ranksum(sim_pulse(1, :), sim_pulse(3, :));
+        p_gs_discon_rec = ranksum(sim_galvanic(1, :), sim_galvanic(3, :));
+        p_an_discon_rec = ranksum(sim_anodic(1, :), sim_anodic(3, :));
         fprintf([...
                 'PS (p=%0.1e) and CGS (%0.1e) were less effective under ', ...
                 'feedback inhibition than disconnected. \n'], ...

@@ -7,7 +7,7 @@ figure('visible', 'off');
 default_colors = get(gca, "colororder");
 
 start_trial = 1;
-end_trial = 100;
+end_trial = 28;
 num_trials = end_trial - start_trial + 1;
 num_batch = 3;
 

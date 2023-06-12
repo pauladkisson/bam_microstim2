@@ -8,6 +8,7 @@ options = optimoptions('lsqcurvefit', 'Display', 'off');
 sim_name = "iScience_Con";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
+default_colors = get(gca, "colororder");
 
 control_coherences = [-100, -51.2, -25.6, -12.8, -6.4, -3.2, 0, 3.2, 6.4, 12.8, 25.6, 51.2, 100] / 100;
 pulse_coherences = [-100, -82.6, -69.8, -63.4, -60.2, -57, -53.8, -50.6, ...
@@ -32,18 +33,30 @@ for j = 1:length(stim_amps)
     else
         output_stimpath = sprintf("Simulation %s/data/%0.2fuA_galvanic", ...
                                   [sim_name, stim_amp*1e6]);
-            if stim_amp < 0 %cathodic GS
-                disp("Cathodic GS")
-                stim_coherences = galvanic_coherences;
-            elseif stim_amp == 0 % control
-                disp("Control")
-                stim_coherences = control_coherences;
-            else
-                disp("Anodic GS")
-                stim_coherences = anodic_coherences;
-            end
+        if stim_amp < 0 %cathodic GS
+            disp("Cathodic GS")
+            stim_coherences = galvanic_coherences;
+        elseif stim_amp == 0 % control
+            disp("Control")
+            stim_coherences = control_coherences;
+        else
+            disp("Anodic GS")
+            stim_coherences = anodic_coherences;
+        end
     end
-    load(strcat(output_stimpath, "/decisions.mat"), "decisions", "decision_times")
+    load(strcat(output_stimpath, "/decisions.mat"), "decisions", ...
+        "decision_times", "avg_acc")
+    if pulse
+        pulse_acc = avg_acc;
+    else
+        if stim_amp < 0 %cathodic GS
+            galvanic_acc = avg_acc;
+        elseif stim_amp == 0 % control
+            ctrl_acc = avg_acc;
+        else
+            anodic_acc = avg_acc;
+        end
+    end
     num_trials = size(decisions, 1);
     trials = 1:num_trials;
     wait = waitbar(0, "Bootstrapping");
@@ -178,3 +191,237 @@ fprintf([...
     'AGS (p=%0.2f) increased the sensitivity by %0.2f +/- %0.2f ', ...
     'relative to control. \n'], ...
     p_an_ctrl, avg_norm_an_sens, sem_an_sens)
+
+%%% Figures
+c = -1:0.001:1;
+bias_median = median(bias, 1);
+sensitivity_median = median(sensitivity, 1);
+b_median = sensitivity_median .* 4;
+a_median = -bias_median .* b_median;
+pulse_coeffs = [a_median(1), b_median(1)];
+galvanic_coeffs = [a_median(2), b_median(2)];
+ctrl_coeffs = [a_median(3), b_median(3)];
+anodic_coeffs = [a_median(4), b_median(4)];
+bias = sort(bias);
+low_idx = floor(size(bias, 1)*0.025);
+high_idx = floor(size(bias, 1)*0.975);
+bias_low = bias(low_idx, :);
+bias_high = bias(high_idx, :);
+a_low = -bias_low .* b_median;
+a_high = -bias_high .* b_median;
+pulse_coeffs_low = [a_low(1), b_median(1)];
+pulse_coeffs_high = [a_high(1), b_median(1)];
+galvanic_coeffs_low = [a_low(2), b_median(2)];
+galvanic_coeffs_high = [a_high(2), b_median(2)];
+ctrl_coeffs_low = [a_low(3), b_median(3)];
+ctrl_coeffs_high = [a_high(3), b_median(3)];
+anodic_coeffs_low = [a_low(4), b_median(4)];
+anodic_coeffs_high = [a_high(4), b_median(4)];
+
+c_confidence95 = [c, fliplr(c)];
+pulse_w = logistic_acc(pulse_coeffs, c);
+pulse_w_low = logistic_acc(pulse_coeffs_low, c);
+pulse_w_high = logistic_acc(pulse_coeffs_high, c);
+pulse_confidence95 = [pulse_w_low, fliplr(pulse_w_high)];
+
+galvanic_w = logistic_acc(galvanic_coeffs, c);
+galvanic_w_low = logistic_acc(galvanic_coeffs_low, c);
+galvanic_w_high = logistic_acc(galvanic_coeffs_high, c);
+galvanic_confidence95 = [galvanic_w_low, fliplr(galvanic_w_high)];
+
+control_w = logistic_acc(ctrl_coeffs, c);
+control_w_low = logistic_acc(ctrl_coeffs_low, c);
+control_w_high = logistic_acc(ctrl_coeffs_high, c);
+control_confidence95 = [control_w_low, fliplr(control_w_high)];
+
+anodic_w = logistic_acc(anodic_coeffs, c);
+anodic_w_low = logistic_acc(anodic_coeffs_low, c);
+anodic_w_high = logistic_acc(anodic_coeffs_high, c);
+anodic_confidence95 = [anodic_w_low, fliplr(anodic_w_high)];
+
+figure;
+set(gca, 'fontsize', 18);
+hold on
+scatter(control_coherences, ctrl_acc, 100, 'k', 'filled')
+scatter(pulse_coherences, pulse_acc, 100, default_colors(7, :), 'filled')
+scatter(galvanic_coherences, galvanic_acc, 100, default_colors(5, :), 'filled')
+scatter(anodic_coherences, anodic_acc, 100, default_colors(6, :), 'filled')
+plot(c, control_w, "k", "Linewidth", 2)
+plot(c, galvanic_w, 'Color', default_colors(5, :), "Linewidth", 2)
+plot(c, anodic_w, 'Color', default_colors(6, :), "Linewidth", 2)
+plot(c, pulse_w, 'Color', default_colors(7, :), "Linewidth", 2)
+plot(c, control_w_low, "k")
+plot(c, galvanic_w_low, 'Color', default_colors(5, :))
+plot(c, anodic_w_low, 'Color', default_colors(6, :))
+plot(c, pulse_w_low, 'Color', default_colors(7, :))
+plot(c, control_w_high, "k")
+plot(c, galvanic_w_high, 'Color', default_colors(5, :))
+plot(c, anodic_w_high, 'Color', default_colors(6, :))
+plot(c, pulse_w_high, 'Color', default_colors(7, :))
+fill(c_confidence95, pulse_confidence95, default_colors(7, :), 'FaceAlpha', 0.25)
+fill(c_confidence95, galvanic_confidence95, default_colors(5, :), 'FaceAlpha', 0.25)
+fill(c_confidence95, control_confidence95, "k", 'FaceAlpha', 0.25)
+fill(c_confidence95, anodic_confidence95, default_colors(6, :), 'FaceAlpha', 0.25)
+hold off
+xlabel("Coherence (%)")
+ylabel("% of trials P1 wins")
+legend("Control", "Pulse", "Galvanic", "Anodic")
+ylim([0, 1])
+title("Bias Confidence Interval")
+
+% Redo for sensitivity confidence interval
+sensitivity = sort(sensitivity);
+low_idx = floor(size(sensitivity, 1)*0.025);
+high_idx = floor(size(sensitivity, 1)*0.975);
+sensitivity_low = sensitivity(low_idx, :);
+sensitivity_high = sensitivity(high_idx, :);
+b_low = sensitivity_low .* 4;
+b_high = sensitivity_high .* 4;
+a_low = -bias_median .* b_low;
+a_high = -bias_median .* b_high;
+pulse_coeffs_low = [a_low(1), b_low(1)];
+pulse_coeffs_high = [a_high(1), b_high(1)];
+galvanic_coeffs_low = [a_low(2), b_low(2)];
+galvanic_coeffs_high = [a_high(2), b_high(2)];
+ctrl_coeffs_low = [a_low(3), b_low(3)];
+ctrl_coeffs_high = [a_high(3), b_high(3)];
+anodic_coeffs_low = [a_low(4), b_low(4)];
+anodic_coeffs_high = [a_high(4), b_high(4)];
+
+c_confidence95 = [c, fliplr(c)];
+pulse_w = logistic_acc(pulse_coeffs, c);
+pulse_w_low = logistic_acc(pulse_coeffs_low, c);
+pulse_w_high = logistic_acc(pulse_coeffs_high, c);
+pulse_confidence95 = [pulse_w_low, fliplr(pulse_w_high)];
+
+galvanic_w = logistic_acc(galvanic_coeffs, c);
+galvanic_w_low = logistic_acc(galvanic_coeffs_low, c);
+galvanic_w_high = logistic_acc(galvanic_coeffs_high, c);
+galvanic_confidence95 = [galvanic_w_low, fliplr(galvanic_w_high)];
+
+control_w = logistic_acc(ctrl_coeffs, c);
+control_w_low = logistic_acc(ctrl_coeffs_low, c);
+control_w_high = logistic_acc(ctrl_coeffs_high, c);
+control_confidence95 = [control_w_low, fliplr(control_w_high)];
+
+anodic_w = logistic_acc(anodic_coeffs, c);
+anodic_w_low = logistic_acc(anodic_coeffs_low, c);
+anodic_w_high = logistic_acc(anodic_coeffs_high, c);
+anodic_confidence95 = [anodic_w_low, fliplr(anodic_w_high)];
+
+figure;
+set(gca, 'fontsize', 18);
+hold on
+scatter(control_coherences, ctrl_acc, 100, 'k', 'filled')
+scatter(pulse_coherences, pulse_acc, 100, default_colors(7, :), 'filled')
+scatter(galvanic_coherences, galvanic_acc, 100, default_colors(5, :), 'filled')
+scatter(anodic_coherences, anodic_acc, 100, default_colors(6, :), 'filled')
+plot(c, control_w, "k", "Linewidth", 2)
+plot(c, galvanic_w, 'Color', default_colors(5, :), "Linewidth", 2)
+plot(c, anodic_w, 'Color', default_colors(6, :), "Linewidth", 2)
+plot(c, pulse_w, 'Color', default_colors(7, :), "Linewidth", 2)
+plot(c, control_w_low, "k")
+plot(c, galvanic_w_low, 'Color', default_colors(5, :))
+plot(c, anodic_w_low, 'Color', default_colors(6, :))
+plot(c, pulse_w_low, 'Color', default_colors(7, :))
+plot(c, control_w_high, "k")
+plot(c, galvanic_w_high, 'Color', default_colors(5, :))
+plot(c, anodic_w_high, 'Color', default_colors(6, :))
+plot(c, pulse_w_high, 'Color', default_colors(7, :))
+fill(c_confidence95, pulse_confidence95, default_colors(7, :), 'FaceAlpha', 0.25)
+fill(c_confidence95, galvanic_confidence95, default_colors(5, :), 'FaceAlpha', 0.25)
+fill(c_confidence95, control_confidence95, "k", 'FaceAlpha', 0.25)
+fill(c_confidence95, anodic_confidence95, default_colors(6, :), 'FaceAlpha', 0.25)
+hold off
+xlabel("Coherence (%)")
+ylabel("% of trials P1 wins")
+legend("Control", "Pulse", "Galvanic", "Anodic")
+ylim([0, 1])
+title("Sensitivity Confidence Interval")
+
+% Redo for full parameter space confidence interval
+confidence = 0.95;
+pulse_psych = logistic_acc_vector(a(:, 1), b(:, 1), c);
+pulse_w_low = zeros(1, length(c));
+pulse_w_high = zeros(1, length(c));
+
+galvanic_psych = logistic_acc_vector(a(:, 2), b(:, 2), c);
+galvanic_w_low = zeros(1, length(c));
+galvanic_w_high = zeros(1, length(c));
+
+control_psych = logistic_acc_vector(a(:, 3), b(:, 3), c);
+control_w_low = zeros(1, length(c));
+control_w_high = zeros(1, length(c));
+
+anodic_psych = logistic_acc_vector(a(:, 4), b(:, 4), c);
+anodic_w_low = zeros(1, length(c));
+anodic_w_high = zeros(1, length(c));
+for i = 1:length(c)
+    [low, high] = get_confidence_interval(pulse_psych(:, i), confidence);
+    pulse_w_low(i) = low;
+    pulse_w_high(i) = high;
+    
+    [low, high] = get_confidence_interval(galvanic_psych(:, i), confidence);
+    galvanic_w_low(i) = low;
+    galvanic_w_high(i) = high;
+    
+    [low, high] = get_confidence_interval(control_psych(:, i), confidence);
+    control_w_low(i) = low;
+    control_w_high(i) = high;
+    
+    [low, high] = get_confidence_interval(anodic_psych(:, i), confidence);
+    anodic_w_low(i) = low;
+    anodic_w_high(i) = high;
+end
+
+c_confidence95 = [c, fliplr(c)];
+pulse_confidence95 = [pulse_w_low, fliplr(pulse_w_high)];
+galvanic_confidence95 = [galvanic_w_low, fliplr(galvanic_w_high)];
+control_confidence95 = [control_w_low, fliplr(control_w_high)];
+anodic_confidence95 = [anodic_w_low, fliplr(anodic_w_high)];
+
+figure;
+set(gca, 'fontsize', 18);
+hold on
+scatter(control_coherences, ctrl_acc, 100, 'k', 'filled')
+scatter(pulse_coherences, pulse_acc, 100, default_colors(7, :), 'filled')
+scatter(galvanic_coherences, galvanic_acc, 100, default_colors(5, :), 'filled')
+scatter(anodic_coherences, anodic_acc, 100, default_colors(6, :), 'filled')
+plot(c, control_w, "k", "Linewidth", 2)
+plot(c, galvanic_w, 'Color', default_colors(5, :), "Linewidth", 2)
+plot(c, anodic_w, 'Color', default_colors(6, :), "Linewidth", 2)
+plot(c, pulse_w, 'Color', default_colors(7, :), "Linewidth", 2)
+plot(c, control_w_low, "k")
+plot(c, galvanic_w_low, 'Color', default_colors(5, :))
+plot(c, anodic_w_low, 'Color', default_colors(6, :))
+plot(c, pulse_w_low, 'Color', default_colors(7, :))
+plot(c, control_w_high, "k")
+plot(c, galvanic_w_high, 'Color', default_colors(5, :))
+plot(c, anodic_w_high, 'Color', default_colors(6, :))
+plot(c, pulse_w_high, 'Color', default_colors(7, :))
+fill(c_confidence95, pulse_confidence95, default_colors(7, :), 'FaceAlpha', 0.25)
+fill(c_confidence95, galvanic_confidence95, default_colors(5, :), 'FaceAlpha', 0.25)
+fill(c_confidence95, control_confidence95, "k", 'FaceAlpha', 0.25)
+fill(c_confidence95, anodic_confidence95, default_colors(6, :), 'FaceAlpha', 0.25)
+hold off
+xlabel("Coherence (%)")
+ylabel("% of trials P1 wins")
+legend("Control", "Pulse", "Galvanic", "Anodic")
+ylim([0, 1])
+title("Full Confidence Interval")
+
+function w = logistic_acc_vector(a, b, c)
+    X = a + b.*c;
+    w = 1 ./ (1 + exp(-X));
+end
+
+function [x_low, x_high] = get_confidence_interval(x, confidence)
+    low_percentile = (1 - confidence) / 2;
+    high_percentile = 1 - low_percentile;
+    x_sorted = sort(x);
+    low_idx = floor(size(x, 1)*low_percentile);
+    high_idx = floor(size(x, 1)*high_percentile);
+    x_low = x_sorted(low_idx);
+    x_high = x_sorted(high_idx);
+end
+

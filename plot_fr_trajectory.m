@@ -130,6 +130,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     hold off
     xticks([1, 2, 3, 4])
     xticklabels(["Galvanic", "Anodic", "Pulsatile", "Control"])
+    ylim([-40, 120])
     ylabel("Change in Firing Rate Slope (spk/s^2)")
     title("Recurrent Excitation Metric: P1 Wins")
     
@@ -143,6 +144,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     p_ps_cgs_median = c(1, end);
     p_cgs_ctrl_median = c(4, end);
     p_ps_ctrl_median = c(2, end);
+    p_cgs_ags_median = c(5, end);
     fprintf([...
         'CGS (%0.2f, %0.2f, %0.2f) has a higher median slope than ', ...
         'control (%0.2f, %0.2f, %0.2f) (p=%0.2f). \n'], ...
@@ -161,6 +163,12 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
         ps_quantiles(1), ps_quantiles(2), ps_quantiles(3), ...
         ctrl_quantiles(1), ctrl_quantiles(2), ctrl_quantiles(3), ...
         p_ps_ctrl_median)
+    fprintf([...
+        'CGS (%0.2f, %0.2f, %0.2f) has a higher median slope than ', ...
+        'AGS (%0.2f, %0.2f, %0.2f) (p=%0.2f). \n'], ...
+        gs_quantiles(1), gs_quantiles(2), gs_quantiles(3), ...
+        an_quantiles(1), an_quantiles(2), an_quantiles(3), ...
+        p_cgs_ags_median)
        
     % Max FRS
     pulse_max_frs = max(pulse_frs, [], 2);
@@ -176,6 +184,10 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     gs_quantiles = quantile(norm_gs, [0.25, 0.5, 0.75]);
     an_quantiles = quantile(norm_an, [0.25, 0.5, 0.75]);
     ctrl_quantiles = quantile(norm_ctrl, [0.25, 0.5, 0.75]);
+    
+    % Debug
+    trials = 1:num_trials;
+    trials(norm_gs>=15)
     
     figure;
     set(gca, 'fontsize', 18)

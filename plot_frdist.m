@@ -86,9 +86,9 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         errorbar(ball_rs*1e6, control_frs, control_sems, "k.", 'MarkerSize', 20)
         errorbar(ball_rs*1e6, anodic_frs, anodic_sems, '.', ...,
             'MarkerSize', 20, 'Color', default_colors(6, :))
-        if plot_name == "ex_c_<400"
+        if plot_name == "ex_c<400"
             xlim([0, 400])
-        elseif plot_name == "ex_c_>400"
+        elseif plot_name == "ex_c>400"
             xlim([400, 2000])
         elseif plot_name == "ex_c_zoom"
             if contains(sim_name, "Discon")
@@ -203,7 +203,8 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         xticks([1, 2, 3, 4])
         xticklabels(["Galvanic", "Anodic", "Pulsatile", "Control"])
         ylabel("Change in Firing Rate (spk/s)")
-        ylim([-6, 6])
+        %ylim([-6, 6])
+        ylim([-4.5, 4.5])
         title(sim_name)
         
         %Statistics
@@ -224,11 +225,11 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
 %             stim_stds(3)/sqrt(stim_trials(3)), stim_means(1), ...
 %             stim_stds(1)/sqrt(stim_trials(1)), p_ps_cgs)
         [p_median, ~, stats] = kruskalwallis([norm_pulse, norm_galvanic, ...
-                                              norm_control, norm_anodic]);
+                                              norm_control, norm_anodic], [], 'off');
         fprintf([...
             "Stimulation induces significantly different firing rates (p=%0.1e). \n"], ...
             p_median)
-        c = multcompare(stats);
+        c = multcompare(stats, 'Display', 'off');
         p_ps_cgs = c(1, end);
         p_cgs_ags = ranksum(abs(norm_galvanic), abs(norm_anodic));
         fprintf([...
@@ -242,6 +243,7 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
             ps_quantiles(1), ps_quantiles(2), ps_quantiles(3), ...
             cgs_quantiles(1), cgs_quantiles(2), cgs_quantiles(3), p_ps_cgs)
         
+        %{
         %Unaffected P1
         popmean_pulse = reshape(mean(stim_frs(1, :, num_affected+1:end), 3, 'omitnan'), [num_trials, 1]);
         popmean_galvanic = reshape(mean(stim_frs(2, :, num_affected+1:end), 3, 'omitnan'), [num_trials, 1]);
@@ -293,6 +295,7 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         ylabel("Change in Firing Rate (spk/s)")
         %ylim([-4, 4])
         title("Affected P1")
+        %}
     end
     % Simulation-wise comparisons
     if length(sim_names) == 3 % discon, p1_int, p1_rec 

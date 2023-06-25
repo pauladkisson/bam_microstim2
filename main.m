@@ -3,7 +3,7 @@
 %%% Main Body of Wang (2002) Biophysical Attractor Model
 
 clear;
-sim_name = "P1_Int";
+sim_name = "P1_Rec";
 sim_path = sprintf("Simulation %s", sim_name);
 tic;
 load(strcat(sim_path, "/bam_constants.mat"))
@@ -36,8 +36,8 @@ for j = 1:length(stim_amps)
         input_coherentpath = sprintf("Simulation %s/spikes/c=%0.3f", sim_name, c);
         output_coherentpath = strcat(output_stimpath, sprintf("/c=%0.3f", c));
         mkdir(output_coherentpath)
-        %parfor trial = start_trial:end_trial
-        for trial = start_trial:end_trial
+        parfor trial = start_trial:end_trial
+        %for trial = start_trial:end_trial
             fprintf("trial: %0.0f \n", trial)
             input_trialpath = strcat(input_coherentpath, sprintf("/trial%0.0f.mat", trial));
             output_trialpath = strcat(output_coherentpath, sprintf("/trial%0.0f.mat", trial));
@@ -189,9 +189,9 @@ for j = 1:length(stim_amps)
                     RP_ps_ind(in_ps_rp) = max(RP_ps_ind(in_ps_rp) - 1, 0);
                 end
             end 
-            %fast_parsave(output_trialpath, Vm);
-            save(output_trialpath, 'Vm', 'I_AMPA_ext', 'I_AMPA_rec', ...
-                'I_NMDA', 'I_GABA', 'I_LEAK')
+            fast_parsave(output_trialpath, Vm);
+            % save(output_trialpath, 'Vm', 'I_AMPA_ext', 'I_AMPA_rec', ...
+            %     'I_NMDA', 'I_GABA', 'I_LEAK')
         end
     end
 end

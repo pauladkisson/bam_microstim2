@@ -115,20 +115,20 @@ plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, .
 
 %% Plot Firing Rate Distribution over distance from electrode
 % stim_duration offset is used to account for onset spike of pulse trains
-win_start = t_task + stim_duration;
-% win_start = t_taskoff - 1/stim_freq + stim_duration - 0.1;
+% win_start = t_task + stim_duration;
+win_start = t_taskoff - 1/stim_freq + stim_duration - 0.1;
 
 % omitting last 5ms of task period for exact comparison PR and FR
-win_stop = t_taskoff - 1/stim_freq + stim_duration;
+win_stop = t_taskoff - 1/stim_freq + stim_duration;% 
 % win_stop = t_task + stim_duration + 0.1;
 
 t_cut = 1.5; %omit trials with DTs longer than t_cut
-ex_c = [0, 0, 0, 0];
-%ex_c = [-57, -57, 0, 30]/100;
+% ex_c = [0, 0, 0, 0];
+ex_c = [-57, -57, 0, 30]/100;
 %  plot_name = 'ex_c' or  'ex_c_zoom' or 'ex_c_>400' or 'ex_c_<400', 'p1_wins' or 'p1_loses'
-plot_name = "ex_c>400";
-sim_names = ["iScience_Discon", "P1_Int", "P1_Rec"];
-% sim_names = ["iScience_Con"];
+plot_name = "p1_loses";
+% sim_names = ["iScience_Discon", "P1_Int", "P1_Rec"];
+sim_names = ["iScience_Con"];
 plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group, num_affected, ...
                      win_start, win_stop, default_colors, ...
                      pulse_coherences, galvanic_coherences, control_coherences, ...
@@ -144,7 +144,7 @@ ex_c = [-57, -57, 0, 30] ./ 100;
 t_cut = 1.5;
 start_thresh = 10;
 stop_thresh = 20;
-plot_name = "p1_wins"; %p1_wins or p1_loses
+plot_name = "p1_loses"; %p1_wins or p1_loses
 plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, ...
     ex_c, pulse_coherences, galvanic_coherences, control_coherences, anodic_coherences, ...
     default_colors, start_trial, end_trial, num_trials, N, p, f, N_E, ...

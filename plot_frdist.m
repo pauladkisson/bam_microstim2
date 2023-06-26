@@ -203,8 +203,10 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         xticks([1, 2, 3, 4])
         xticklabels(["Galvanic", "Anodic", "Pulsatile", "Control"])
         ylabel("Change in Firing Rate (spk/s)")
-        %ylim([-6, 6])
-        ylim([-4.5, 4.5])
+        % ylim([-4.5, 4.5]) % discon, p1int, p1rec
+        % ylim([-2, 8]) % p1wins_tstart, p1loses_tstart
+        % ylim([-15, 10]) % p1wins_tend
+        ylim([-1, 6]) % p1loses_tend
         title(sim_name)
         
         %Statistics

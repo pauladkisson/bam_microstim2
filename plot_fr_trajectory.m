@@ -184,11 +184,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     gs_quantiles = quantile(norm_gs, [0.25, 0.5, 0.75]);
     an_quantiles = quantile(norm_an, [0.25, 0.5, 0.75]);
     ctrl_quantiles = quantile(norm_ctrl, [0.25, 0.5, 0.75]);
-    
-    % Debug
-    trials = 1:num_trials;
-    trials(norm_gs>=15)
-    
+        
     figure;
     set(gca, 'fontsize', 18)
     hold on
@@ -197,7 +193,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     hold off
     xticks([1, 2, 3, 4])
     xticklabels(["Galvanic", "Anodic", "Pulsatile", "Control"])
-    ylim([-5, 25])
+    ylim([-5, 10])
     ylabel("Change in Maximum Firing Rate (spk/s)")
     title("Recurrent Excitation Metric: P1 Loses")
     

@@ -169,6 +169,7 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, t_cut, N, top_N,
             hold off
             xlabel("Distance from Electrode (um)")
             ylabel("Coefficient of Variation (unitless)")
+            xlim([0, 2000])
         end
     end
 end

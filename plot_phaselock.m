@@ -101,6 +101,7 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         xlabel("Distance from Electrode (um)")
         ylabel("Percent of Phaselocked Spikes (%)")
         ylim([0, 100])
+        xlim([0, 2000])
         
         % Statistics
         p_ps = ones(num_affected, 1);
@@ -126,6 +127,6 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
     % Bonferroni correction
     p_sim = p_sim * num_affected;
     sig_thresh = 0.05;
-    fprintf("Neurons with significantly different synchrony: %0.1f \n", ...
+    fprintf("Neurons with significantly different synchrony: %0.1f um \n", ...
             ball_rs(p_sim<sig_thresh)*1e6)
 end

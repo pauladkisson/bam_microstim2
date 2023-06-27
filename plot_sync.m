@@ -138,8 +138,14 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_af
     c = multcompare(stats);
     fprintf([...
         'CGS did not induce significant synchrony compared to control ', ...
-        '(p=%0.2f)'], c(4, end));
+        '(p=%0.2f) \n'], c(4, end));
     fprintf([...
         'AGS induced a mild de-synchronizing effect compared to control ', ...
-        '(p=%0.1e)'], c(end, end));
+        '(p=%0.1e) \n'], c(end, end));
+    
+    p_cgs_ctrl = ranksum(popmean_sync(1, :, 2), popmean_sync(1, :, 3))
+    mean(popmean_sync(1, :, 1), 'omitnan')
+    mean(popmean_sync(1, :, 2), 'omitnan')
+    mean(popmean_sync(1, :, 3), 'omitnan')
+    mean(popmean_sync(1, :, 4), 'omitnan')
 end

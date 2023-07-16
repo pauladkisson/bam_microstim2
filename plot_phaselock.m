@@ -39,8 +39,8 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
             for trial = start_trial:end_trial
                 relative_trial = trial - start_trial + 1;
                 if ~contains(sim_name, "Discon") && (...
-                        decisions(relative_trial, stim_coherences==0) ~= 1 || ...
-                        decision_times(relative_trial, stim_coherences==0) > t_cut)
+                        decisions(relative_trial, stim_coherences==c) ~= 1 || ...
+                        decision_times(relative_trial, stim_coherences==c) > t_cut)
                     stim_sync(j, relative_trial, :) = NaN;
                     continue %skip trials where P1 doesn't win or decision takes too long
                 end
@@ -73,21 +73,23 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         galvanic_trialmean = mean(galvanic_sync, 1, 'omitnan');
         control_trialmean = mean(control_sync, 1, 'omitnan');
         anodic_trialmean = mean(anodic_sync, 1, 'omitnan');
-        pulse_wins = all(~isnan(pulse_sync), 2);
-        galvanic_wins = all(~isnan(galvanic_sync), 2);
-        control_wins = all(~isnan(control_sync), 2);
-        anodic_wins = all(~isnan(anodic_sync), 2);
-        pulse_sem = std(pulse_sync, [], 1, 'omitnan') / sqrt(length(pulse_wins));
-        galvanic_sem = std(galvanic_sync, [], 1, 'omitnan') / sqrt(length(galvanic_wins));
-        control_sem =  std(control_sync, [], 1, 'omitnan') / sqrt(length(control_wins));
-        anodic_sem = std(anodic_sync, [], 1, 'omitnan') / sqrt(length(anodic_wins));
+        pulse_wins = sum(~isnan(pulse_sync), 1);
+        galvanic_wins = sum(~isnan(galvanic_sync), 1);
+        control_wins = sum(~isnan(control_sync), 1)
+        anodic_wins = sum(~isnan(anodic_sync), 1)
+        pulse_sem = std(pulse_sync, [], 1, 'omitnan') ./ sqrt(pulse_wins);
+        galvanic_sem = std(galvanic_sync, [], 1, 'omitnan') ./ sqrt(galvanic_wins);
+        control_sem =  std(control_sync, [], 1, 'omitnan') ./ sqrt(control_wins);
+        anodic_sem = std(anodic_sync, [], 1, 'omitnan') ./ sqrt(anodic_wins);
 
         if contains(sim_name, "Discon")
             plot_shape = 'o';
         else
-            plot_shape = '^';
+            % plot_shape = '^';
+            plot_shape = 'o';
         end
-        figure(1);
+        % figure(1);
+        figure;
         hold on
         errorbar(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), galvanic_sem(1:top_N), ...
             plot_shape, 'Color', default_colors(5, :), 'MarkerFaceColor', default_colors(5, :))
@@ -102,6 +104,7 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         ylabel("Percent of Phaselocked Spikes (%)")
         ylim([0, 100])
         xlim([0, 2000])
+        title(sim_name)
         
         % Statistics
         p_ps = ones(num_affected, 1);

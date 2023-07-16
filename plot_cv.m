@@ -142,21 +142,23 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, t_cut, N, top_N,
             galvanic_trialmean = mean(galvanic_cv, 1, 'omitnan');
             control_trialmean = mean(control_cv, 1, 'omitnan');
             anodic_trialmean = mean(anodic_cv, 1, 'omitnan');
-            pulse_wins = all(~isnan(pulse_cv), 2);
-            galvanic_wins = all(~isnan(galvanic_cv), 2);
-            control_wins = all(~isnan(control_cv), 2);
-            anodic_wins = all(~isnan(anodic_cv), 2);
-            pulse_sem = std(pulse_cv, [], 1, 'omitnan') / sqrt(length(pulse_wins));
-            galvanic_sem = std(galvanic_cv, [], 1, 'omitnan') / sqrt(length(galvanic_wins));
-            control_sem =  std(control_cv, [], 1, 'omitnan') / sqrt(length(control_wins));
-            anodic_sem = std(anodic_cv, [], 1, 'omitnan') / sqrt(length(anodic_wins));
+            pulse_wins = sum(~isnan(pulse_cv), 1);
+            galvanic_wins = sum(~isnan(galvanic_cv), 1);
+            control_wins = sum(~isnan(control_cv), 1);
+            anodic_wins = sum(~isnan(anodic_cv), 1);
+            pulse_sem = std(pulse_cv, [], 1, 'omitnan') ./ sqrt(pulse_wins);
+            galvanic_sem = std(galvanic_cv, [], 1, 'omitnan') ./ sqrt(galvanic_wins);
+            control_sem =  std(control_cv, [], 1, 'omitnan') ./ sqrt(control_wins);
+            anodic_sem = std(anodic_cv, [], 1, 'omitnan') ./ sqrt(anodic_wins);
 
             if contains(sim_name, "Discon")
                 plot_shape = 'o';
             else
-                plot_shape = '^';
+                % plot_shape = '^';
+                plot_shape = 'o';
             end
-            figure(1);
+            %figure(1);
+            figure;
             hold on
             errorbar(ball_rs(1:top_N)*1e6, galvanic_trialmean(1:top_N), galvanic_sem(1:top_N), ...
                 plot_shape, 'Color', default_colors(5, :), 'MarkerFaceColor', default_colors(5, :))
@@ -170,6 +172,7 @@ function plot_cv(sim_name, sim_names, pulse_amps, stim_amps, t, t_cut, N, top_N,
             xlabel("Distance from Electrode (um)")
             ylabel("Coefficient of Variation (unitless)")
             xlim([0, 2000])
+            title(sim_name)
         end
     end
 end

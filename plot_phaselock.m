@@ -75,8 +75,8 @@ function plot_phaselock(sim_names, pulse_amps, stim_amps, t, t_task, t_taskoff, 
         anodic_trialmean = mean(anodic_sync, 1, 'omitnan');
         pulse_wins = sum(~isnan(pulse_sync), 1);
         galvanic_wins = sum(~isnan(galvanic_sync), 1);
-        control_wins = sum(~isnan(control_sync), 1)
-        anodic_wins = sum(~isnan(anodic_sync), 1)
+        control_wins = sum(~isnan(control_sync), 1);
+        anodic_wins = sum(~isnan(anodic_sync), 1);
         pulse_sem = std(pulse_sync, [], 1, 'omitnan') ./ sqrt(pulse_wins);
         galvanic_sem = std(galvanic_sync, [], 1, 'omitnan') ./ sqrt(galvanic_wins);
         control_sem =  std(control_sync, [], 1, 'omitnan') ./ sqrt(control_wins);

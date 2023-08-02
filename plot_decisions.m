@@ -1,8 +1,8 @@
 %%% Paul Adkisson
 %%% 2/14/2022
 %%% Plot Decision Metrics Accuracy and Decision Time
-function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
-                num_batch, num_trials, pulse_coherences, ...
+function plot_decisions(sim_name, pulse_amps, stim_amps, t_cut, ...
+                default_colors, num_batch, num_trials, pulse_coherences, ...
                 galvanic_coherences, control_coherences, anodic_coherences)
     %Accuracy
     num_amps = length(stim_amps);
@@ -27,7 +27,7 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
                 stim_coherences = anodic_coherences;
             end
         end
-        load(strcat(datapath, "/decisions.mat"), "avg_acc", "decisions", ...
+        load(strcat(datapath, "/decisions.mat"), "avg_acc", ...
             "coeffs", "batch_coeffs", "batch_acc", "percent_nodec");
         if pulse
             pulse_acc = avg_acc;
@@ -160,12 +160,16 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
         load(strcat(datapath, "/decisions.mat"), "decision_times");
         if pulse
             pulse_dt = decision_times;
+            pulse_latedec = sum(decision_times > t_cut, 1) / num_trials;
         elseif stim_amp < 0 %cathodic GS
             galvanic_dt = decision_times;
+            galvanic_latedec = sum(decision_times > t_cut, 1) / num_trials;
         elseif stim_amp == 0 %control
             control_dt = decision_times;
+            ctrl_latedec = sum(decision_times > t_cut, 1) / num_trials;
         else %anoidc GS
             anodic_dt = decision_times;
+            anodic_latedec = sum(decision_times > t_cut, 1) / num_trials;
         end
     end
     trialmean_pulse = mean(pulse_dt, 1, 'omitnan');
@@ -259,9 +263,24 @@ function plot_decisions(sim_name, pulse_amps, stim_amps, default_colors, ...
     hold on
     scatter(pulse_coherences, pulse_nodec*100, [], default_colors(7, :).*ones(length(pulse_nodec), 3), 'filled')
     scatter(galvanic_coherences, galvanic_nodec*100, [], default_colors(5, :).*ones(length(galvanic_nodec), 3), 'filled')
-    %scatter(anodic_coherences, anodic_nodec*100, [], default_colors(6, :).*ones(length(anodic_nodec), 3), 'filled')
+    scatter(anodic_coherences, anodic_nodec*100, [], default_colors(6, :).*ones(length(anodic_nodec), 3), 'filled')
     scatter(control_coherences, ctrl_nodec*100, 'k', 'filled') 
     hold off
+    ylim([0, 100])
     xlabel("Coherence (%)")
     ylabel("% of trials No-Decision")
+    
+    %Late-decisions
+    figure;
+    set(gca, 'fontsize', 18);
+    hold on
+    scatter(pulse_coherences, pulse_latedec*100, [], default_colors(7, :).*ones(length(pulse_latedec), 3), 'filled')
+    scatter(galvanic_coherences, galvanic_latedec*100, [], default_colors(5, :).*ones(length(galvanic_latedec), 3), 'filled')
+    scatter(anodic_coherences, anodic_latedec*100, [], default_colors(6, :).*ones(length(anodic_latedec), 3), 'filled')
+    scatter(control_coherences, ctrl_latedec*100, 'k', 'filled') 
+    hold off
+    ylim([0, 100])
+    xlabel("Coherence (%)")
+    ylabel("% of trials Late-Decision")
+    title(sprintf("t_cut = %0.2f", t_cut))
 end

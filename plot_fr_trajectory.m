@@ -193,7 +193,7 @@ function plot_fr_trajectory(sim_name, pulse_amps, stim_amps, t, t_cut, t_task, .
     hold off
     xticks([1, 2, 3, 4])
     xticklabels(["Galvanic", "Anodic", "Pulsatile", "Control"])
-    ylim([-5, 10])
+    ylim([-5, 15])
     ylabel("Change in Maximum Firing Rate (spk/s)")
     title("Recurrent Excitation Metric: P1 Loses")
     

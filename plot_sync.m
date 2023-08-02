@@ -134,18 +134,16 @@ function plot_sync(sim_names, pulse_amps, stim_amps, t, t_cut, num_group, num_af
         stim_type((j-1)*num_trials+1:j*num_trials) = j;
     end
     stim_types = [stim_type; stim_type];
-    [~, ~, stats] = anovan(flat_sync, {stim_types, is_connected});
+    %[~, ~, stats] = anovan(flat_sync, {stim_types, is_connected});
+    [~, ~, stats] = anovan(con_sync, {stim_type}); % Using 1-way ANOVA when not comparing discon
     c = multcompare(stats);
+    fprintf([...
+        'PS induced significant synchrony compared to control ', ...
+        '(p=%0.2f) \n'], c(2, end));
     fprintf([...
         'CGS did not induce significant synchrony compared to control ', ...
         '(p=%0.2f) \n'], c(4, end));
     fprintf([...
         'AGS induced a mild de-synchronizing effect compared to control ', ...
         '(p=%0.1e) \n'], c(end, end));
-    
-    p_cgs_ctrl = ranksum(popmean_sync(1, :, 2), popmean_sync(1, :, 3))
-    mean(popmean_sync(1, :, 1), 'omitnan')
-    mean(popmean_sync(1, :, 2), 'omitnan')
-    mean(popmean_sync(1, :, 3), 'omitnan')
-    mean(popmean_sync(1, :, 4), 'omitnan')
 end

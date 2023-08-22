@@ -45,6 +45,10 @@ Data is stored in an organized nested folder structure with the following levels
                   in which the keys are the neuron number as a string (ex. ``'1'``) and the values are a vector containing the time indices
                   when the neuron fired an action potential (ex. ``t(recspikes('1')) = [0.521, 1.001, 2.325, 2.9, 2.997, 3.053]``).
 
+## Cable Model Validation
+The code used to validate LIF microstimulation approximations against a cable equation model is housed in a separate folder called CableModelValidation.  The main script to run this code is called cable_validation.m
+
+
 ## Contact
 Paul Adkisson: paul.wesley.adkisson@gmail.com
 

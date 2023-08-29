@@ -2,13 +2,13 @@
 %%% 9.6.21
 %%% Purpose: Calculate decision time and accuracy from population firing
 %%% rates
-sim_name = "iScience_Con";
+sim_name = "P1_Int_debug";
 sim_path = sprintf("Simulation %s", sim_name);
 load(strcat(sim_path, "/bam_constants.mat"))
 
 
 num_batch = 3;
-connected = true;
+fully_connected = false;
 
 start_trial = 1;
 end_trial = 100;
@@ -17,6 +17,7 @@ num_trials = length(trials);
 
 control_coherences = 0;
 galvanic_coherences = 0;
+anodic_coherences = 0;
 pulse_coherences = 0;
 
 %{
@@ -25,6 +26,7 @@ pulse_coherences = 0;
 % galvanic_coherences = [-100, -65, -60, -59, -58, -57, -56, -55, -51.2, -45, -25.6, 0, 25.6] / 100;
 % anodic_coherences = fliplr([100, 65, 55, 51.2, 45, 40, 35, 32, 31, 30, 29, 28, 25.6, 12.8, 0]) / 100;
 %}
+%{
 pulse_coherences = [-100, -82.6, -69.8, -63.4, -60.2, -57, -53.8, -50.6, ...
                     -44.2, -31.4, -5.8, 0, 43, 100] ./ 100;
 galvanic_coherences = [-100, -82.6, -69.8, -63.4, -60.2, -57, -53.8, -50.6, ...
@@ -34,10 +36,10 @@ anodic_coherences = fliplr([100, 81.2, 55.6, 42.8, 36.4, 33.2, 30, 26.8, ...
 control_coherences = [-100, -51.2, -25.6, -12.8, -6.4, -3.2, 0, 3.2, 6.4, 12.8, 25.6, 51.2, 100] / 100;
 %}
 
-%pulse_amps = [-10*1e-6];
-%dc_amps = [-1.4, 0, 1.4]*1e-6;
-pulse_amps = [];
-dc_amps = [0];
+pulse_amps = [-10*1e-6];
+dc_amps = [-1.4, 0, 1.4]*1e-6;
+% pulse_amps = [];
+% dc_amps = [0];
 stim_amps = [pulse_amps, dc_amps];
 
 for j = 1:length(stim_amps)
@@ -75,16 +77,14 @@ for j = 1:length(stim_amps)
         for trial = start_trial:end_trial
             output_trialpath = strcat(output_coherentpath, sprintf("/trial%0.0f.mat", trial));
             relative_trial = trial - start_trial + 1;
-            load(output_trialpath, "recspikes")
-            [pop_frs, fr_vars] = recspikes2popfrs(recspikes, t, N, dt, p, f, N_E);
-            [decision, decision_idx] = get_decision(pop_frs);
-            decisions(relative_trial, i) = decision;
-            if decision_idx == -1
-                decision_times(relative_trial, i) = NaN;
+            if fully_connected
+                load(output_trialpath, "recspikes")
+                [pop_frs, fr_vars] = recspikes2popfrs(recspikes, t, N, dt, p, f, N_E);
+                [dec, dec_idx] = get_decision(pop_frs);
             else
-                decision_times(relative_trial, i) = t(decision_idx) - t_task;
+                dec = NaN;
+                dec_idx = -1;
             end
-            [dec, dec_idx] = get_decision(pop_frs);
             decisions(relative_trial, i) = dec;
             if dec_idx == -1
                 decision_times(relative_trial, i) = NaN;
@@ -109,7 +109,7 @@ for j = 1:length(stim_amps)
             batch_acc(i, batch) = sum(coherent_decisions(batch_idx)==1) / batch_size;
         end
     end
-    if connected
+    if fully_connected
         %Fit to logistic FN as in Hanks et al. 2006
         coeffs = lsqcurvefit(@logistic_acc, [1, 1], coherences, avg_acc');
         %Batch for statistical comparison
@@ -127,6 +127,7 @@ for j = 1:length(stim_amps)
 end
 
 function [decision, dec_idx] = get_decision(pop_frs)
+    pop_frs(end, :)
     decision_thresh = 15; %Hz
     if pop_frs(end, 1) < decision_thresh && pop_frs(end, 2) < decision_thresh || ...
             (pop_frs(end, 1) >= decision_thresh && pop_frs(end, 2) >= decision_thresh)%no decision

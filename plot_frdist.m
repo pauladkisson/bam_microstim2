@@ -42,7 +42,7 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
                 control_decs = load(sprintf("Simulation %s/data/0.00uA_galvanic/decisions.mat", sim_name));
                 ctrl_decs = control_decs.decisions;
             catch
-                assert(sim_name~="Brainless_m=0_Con")
+                assert(plot_name~="p1_wins" && plot_name~="p1_loses")
             end
             for trial = start_trial:end_trial
                 relative_trial = trial - start_trial + 1;
@@ -203,10 +203,10 @@ function plot_frdist(sim_names, ex_c, pulse_amps, stim_amps, t, t_cut, num_group
         xticks([1, 2, 3, 4])
         xticklabels(["Galvanic", "Anodic", "Pulsatile", "Control"])
         ylabel("Change in Firing Rate (spk/s)")
-        % ylim([-4.5, 4.5]) % discon, p1int, p1rec
+        ylim([-4.5, 4.5]) % discon, p1int, p1rec
         % ylim([-2, 8]) % p1wins_tstart, p1loses_tstart
         % ylim([-20, 10]) % p1wins_tend
-        ylim([-1, 6]) % p1loses_tend
+        % ylim([-1, 6]) % p1loses_tend
         title(sim_name)
         
         %Statistics

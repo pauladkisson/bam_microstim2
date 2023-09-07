@@ -1,5 +1,5 @@
 # bam_microstim2
-This projects adds microstimulation to the Wang 2002 Biophysical Attractor Model of decision-making, fully coded in MATLAB R2021A.  This work improves upon the original [bam_microstim](https://github.com/pauladkisson/bam_microstim) with more realistic extracellular microstimulation model and more detailed analyses.
+This projects adds microstimulation to the Wang 2002 Biophysical Attractor Model of decision-making, fully coded in MATLAB R2021A.  This work improves upon the original [bam_microstim](https://github.com/pauladkisson/bam_microstim) with more realistic extracellular microstimulation model and more detailed analyses.  A pre-print describing this work can be found [here](https://www.biorxiv.org/content/10.1101/2023.09.01.555903v1).
 
 ## Installation
 Simply clone the repository and navigate MATLAB to the bam_microstim2 directory.
